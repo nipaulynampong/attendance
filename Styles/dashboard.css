@@ -1,0 +1,236 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins';
+    background-color: white;
+    color: black;
+}
+
+.topnav {
+    background-color: #9CAFAA;
+    color: #f2f2f2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px 5px;
+    transition: 0.5s;
+    height: 50px;
+}
+
+.topnav input[type=text] {
+    flex-grow: 0;
+    margin: 0 10px;
+    padding: 0px;
+    border: none;
+    border-radius: 20px;
+    font-size: 17px;
+    color: black;
+    text-align: center;
+}
+
+.topnav .logout-btn {
+    padding: 8px 10px;
+    background-color: white;
+    border: none;
+    color: black;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.topnav .logout-btn:hover {
+    background-color: #666;
+    color: white;
+    font-family: 'Poppins';
+}
+
+.sidenav {
+    height: 100%;
+    width: 250px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: -250px;
+    background-color: #4F6F52;
+    overflow-y: auto;
+    transition: 0.5s;
+    padding-top: 60px;
+}
+
+.sidenav a {
+    padding: 8px 8px 8px 10px;
+    text-decoration: none;
+    font-size: 17px;
+    color: white;
+    display: block;
+    transition: 0.3s;
+    margin-bottom: 7px;
+    text-align: center;
+    margin-top: 7px;
+}
+
+.sidenav a:hover {
+    background-color: white;
+    color: black;
+}
+
+.main {
+    padding: 20px;
+}
+
+.toggle-btn {
+    cursor: pointer;
+    color: #f2f2f2;
+    font-size: 24px;
+    padding: 8px;
+}
+
+.toggle-btn:hover {
+    background-color: #444;
+}
+
+.admin-section {
+    display: flex;
+    align-items: center;
+    margin-left: 25px;
+    margin-top: -47px; /* Move it up by 20px */
+    margin-bottom: 60px; /* Reduce bottom space */
+}
+
+
+.admin-picture {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background-color: #f2f2f2;
+    margin-right: 15px;
+    background-image: url('1.png');
+    background-size: cover;
+}
+
+.admin-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-text {
+    color: white;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.online-status {
+    display: flex;
+    align-items: center;
+}
+
+.status-circle {
+    width: 10px;
+    height: 10px;
+    background-color: #4CAF50;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-text {
+    color: #4CAF50;
+    font-size: 14px;
+    margin-left: 5px;
+}
+
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 3;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.modal p {
+    margin-bottom: 20px;
+}
+
+.btn-yes, .btn-cancel {
+    padding: 10px 25px;
+    margin: 0 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-left: 33px;
+    width: 30%;
+}
+
+.btn-yes {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+}
+
+.btn-cancel {
+    background-color: #f44336;
+    color: white;
+    border: none;
+}
+
+.btn-yes:hover, .btn-cancel:hover {
+    opacity: 0.8;
+}
+
+/* Dropdowns */
+.dropdown-content {
+    display: none;
+    position: relative;
+    background-color: #4F6F52; /* Matching side nav color */
+    min-width: 180px;
+    z-index: 1;
+    padding: -5px;
+    border-radius: 5px;
+    margin-left: 20px;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.dropdown-content a {
+    font-size: 16px;
+    color: white;
+    text-align: right;
+    padding: 8px 8px;
+    display: block;
+    text-decoration: none;
+}
+
+.dropdown-content a:hover {
+    background-color: white;
+}
+
+/* When dropdown is open, we allow it to grow down */
+.dropdown.open .dropdown-content {
+    max-height: 300px; /* Set the max height when open */
+    overflow: visible;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+

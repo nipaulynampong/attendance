@@ -1,0 +1,162 @@
+Form submission received: 2025-04-22 01:48:15
+POST data: Array
+(
+    [employeeID] => 3213
+    [lastName] => asd
+    [firstName] => asd
+    [middleName] => ada
+    [suffix] => N/A
+    [gender] => Male
+    [age] => 32
+    [birthday] => 2025-04-22
+    [emailAddress] => asdasd@gmail.com
+    [address] => asd
+    [contactNumber] => 21312
+    [department] => IT
+    [Saturday_Rest] => 1
+    [Sunday_Rest] => 1
+)
+
+SQL Query: UPDATE employee SET 
+                `Last Name`='asd', 
+                `First Name`='asd', 
+                `Middle Name`='ada', 
+                `Suffix`='N/A', 
+                `Gender`='Male', 
+                `Age`='32', 
+                `Birthday`='2025-04-22', 
+                `Email Address`='asdasd@gmail.com', 
+                `Address`='asd', 
+                `Contact Number`='21312', 
+                `Department`='IT',
+                `Monday_Rest`=0,
+                `Tuesday_Rest`=0,
+                `Wednesday_Rest`=0,
+                `Thursday_Rest`=0,
+                `Friday_Rest`=0,
+                `Saturday_Rest`=1,
+                `Sunday_Rest`=1
+                WHERE `EmployeeID`='3213'
+Update successful
+Form submission received: 2025-04-22 02:00:19
+POST data: Array
+(
+    [employeeID] => 3213
+    [lastName] => asd
+    [firstName] => asd
+    [middleName] => ada
+    [suffix] => N/A
+    [gender] => Male
+    [age] => 32
+    [birthday] => 2025-04-22
+    [emailAddress] => asdasd@gmail.com
+    [address] => asd
+    [contactNumber] => 21312
+    [department] => IT
+    [Saturday_Rest] => 1
+    [Sunday_Rest] => 1
+)
+
+SQL Query: UPDATE employee SET 
+                `Last Name`='asd', 
+                `First Name`='asd', 
+                `Middle Name`='ada', 
+                `Suffix`='N/A', 
+                `Gender`='Male', 
+                `Age`='32', 
+                `Birthday`='2025-04-22', 
+                `Email Address`='asdasd@gmail.com', 
+                `Address`='asd', 
+                `Contact Number`='21312', 
+                `Department`='IT',
+                `Monday_Rest`=0,
+                `Tuesday_Rest`=0,
+                `Wednesday_Rest`=0,
+                `Thursday_Rest`=0,
+                `Friday_Rest`=0,
+                `Saturday_Rest`=1,
+                `Sunday_Rest`=1
+                WHERE `EmployeeID`='3213'
+Update successful
+Form submission received: 2025-04-22 02:09:03
+POST data: Array
+(
+    [employeeID] => 3213
+    [lastName] => asd
+    [firstName] => asd
+    [middleName] => ada
+    [suffix] => N/A
+    [gender] => Male
+    [age] => 32
+    [birthday] => 2025-04-22
+    [emailAddress] => asdasd@gmail.com
+    [address] => asd
+    [contactNumber] => 21312
+    [department] => IT
+    [Friday_Rest] => 1
+    [Saturday_Rest] => 1
+    [Sunday_Rest] => 1
+)
+
+SQL Query: UPDATE employee SET 
+                `Last Name`='asd', 
+                `First Name`='asd', 
+                `Middle Name`='ada', 
+                `Suffix`='N/A', 
+                `Gender`='Male', 
+                `Age`='32', 
+                `Birthday`='2025-04-22', 
+                `Email Address`='asdasd@gmail.com', 
+                `Address`='asd', 
+                `Contact Number`='21312', 
+                `Department`='IT',
+                `Monday_Rest`=0,
+                `Tuesday_Rest`=0,
+                `Wednesday_Rest`=0,
+                `Thursday_Rest`=0,
+                `Friday_Rest`=1,
+                `Saturday_Rest`=1,
+                `Sunday_Rest`=1
+                WHERE `EmployeeID`='3213'
+Update successful
+Form submission received: 2025-04-22 02:09:08
+POST data: Array
+(
+    [employeeID] => 3213
+    [lastName] => asd
+    [firstName] => asd
+    [middleName] => ada
+    [suffix] => N/A
+    [gender] => Male
+    [age] => 32
+    [birthday] => 2025-04-22
+    [emailAddress] => asdasd@gmail.com
+    [address] => asd
+    [contactNumber] => 21312
+    [department] => IT
+    [Friday_Rest] => 1
+    [Saturday_Rest] => 1
+    [Sunday_Rest] => 1
+)
+
+SQL Query: UPDATE employee SET 
+                `Last Name`='asd', 
+                `First Name`='asd', 
+                `Middle Name`='ada', 
+                `Suffix`='N/A', 
+                `Gender`='Male', 
+                `Age`='32', 
+                `Birthday`='2025-04-22', 
+                `Email Address`='asdasd@gmail.com', 
+                `Address`='asd', 
+                `Contact Number`='21312', 
+                `Department`='IT',
+                `Monday_Rest`=0,
+                `Tuesday_Rest`=0,
+                `Wednesday_Rest`=0,
+                `Thursday_Rest`=0,
+                `Friday_Rest`=1,
+                `Saturday_Rest`=1,
+                `Sunday_Rest`=1
+                WHERE `EmployeeID`='3213'
+Update successful

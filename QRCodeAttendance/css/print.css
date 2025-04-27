@@ -1,0 +1,7 @@
+/* print.css */
+
+#divvideo > *:not(h3),
+#divvideo > table {
+    display: block !important;
+    visibility: visible !important;
+}
