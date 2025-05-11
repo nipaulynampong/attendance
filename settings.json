@@ -1,0 +1,31 @@
+{
+  "application": {
+    "name": "Barangay Malinta Attendance System",
+    "version": "1.0.0",
+    "main_window": {
+      "title": "Barangay Malinta Attendance System",
+      "icon": "www/Styles/1.png",
+      "width": 1024,
+      "height": 768,
+      "min_width": 800,
+      "min_height": 600,
+      "start_maximized": false,
+      "center_on_screen": true
+    }
+  },
+  "web_server": {
+    "listen_on": ["127.0.0.1", 0],
+    "www_directory": "www",
+    "index_files": ["homepage.php", "index.php", "index.html"],
+    "cgi_interpreter": "php/php-cgi.exe",
+    "cgi_extensions": ["php"],
+    "cgi_temp_dir": "www/temp",
+    "hide_php_errors": false
+  },
+  "php": {
+    "include_path": "www",
+    "error_reporting": "E_ALL",
+    "display_errors": 1,
+    "date.timezone": "Asia/Manila"
+  }
+} 

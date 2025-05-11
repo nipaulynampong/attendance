@@ -1,5 +1,8 @@
 <?php
 session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Check if user is logged in as admin
 if (!isset($_SESSION['admin_id'])) {
     header("Location: admin.php");
@@ -25,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             case 'add_admin':
                 if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['email']) && isset($_POST['full_name'])) {
                     $username = $conn->real_escape_string($_POST['username']);
-                    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+                    $password = $conn->real_escape_string($_POST['password']);
                     $email = $conn->real_escape_string($_POST['email']);
                     $full_name = $conn->real_escape_string($_POST['full_name']);
                     
@@ -48,22 +51,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $email = $conn->real_escape_string($_POST['email']);
                     $full_name = $conn->real_escape_string($_POST['full_name']);
                     
+                    // Debug information
+                    error_log("Updating admin ID: " . $admin_id);
+                    error_log("Username: " . $username);
+                    error_log("Email: " . $email);
+                    error_log("Full Name: " . $full_name);
+                    
                     $sql = "UPDATE admin SET username=?, email=?, full_name=? WHERE id=?";
                     $stmt = $conn->prepare($sql);
                     $stmt->bind_param("sssi", $username, $email, $full_name, $admin_id);
                     
                     if ($stmt->execute()) {
+                        // Check if any rows were affected
+                        if ($stmt->affected_rows > 0) {
+                            $message = "Admin updated successfully (" . $stmt->affected_rows . " rows affected)";
+                        } else {
+                            $message = "No changes were made. The data might be the same or the ID might be incorrect.";
+                            error_log("Update executed but no rows affected. Admin ID: " . $admin_id);
+                        }
+                        
                         if (!empty($_POST['password'])) {
-                            $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+                            $password = $conn->real_escape_string($_POST['password']);
                             $sql = "UPDATE admin SET password=? WHERE id=?";
                             $stmt = $conn->prepare($sql);
                             $stmt->bind_param("si", $password, $admin_id);
                             $stmt->execute();
+                            error_log("Password update affected rows: " . $stmt->affected_rows);
                         }
-                        $message = "Admin updated successfully";
                     } else {
                         $error = "Error updating admin: " . $conn->error;
+                        error_log("SQL Error: " . $conn->error);
                     }
+                } else {
+                    $error = "Missing required fields for admin update";
+                    error_log("Missing fields in admin update. POST data: " . print_r($_POST, true));
                 }
                 break;
 
@@ -276,6 +297,26 @@ $result = $conn->query($sql);
             border-color: #FFE0B2;
             color: #996600;
         }
+        
+        /* Toggle password styling */
+        .toggle-password {
+            cursor: pointer;
+            color: #6c757d;
+            transition: color 0.2s;
+        }
+        
+        .toggle-password:hover {
+            color: #4f6f52;
+        }
+        
+        .email-note {
+            color: #666;
+            background-color: #f8f9fa;
+            border-left: 3px solid #4f6f52;
+            padding: 8px 12px;
+            margin-top: 5px;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
@@ -328,16 +369,32 @@ $result = $conn->query($sql);
                             <input type="text" name="username" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label>Password</label>
-                            <input type="password" name="password" class="form-control" required>
+                            <label>Password <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" name="password" id="password" class="form-control" required>
+                                <div class="input-group-append">
+                                    <span class="input-group-text toggle-password" onclick="togglePasswordVisibility('password')">
+                                        <i class="fas fa-eye"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted email-note">
+                                <i class="fas fa-info-circle"></i> Create a strong password with at least 8 characters including uppercase, lowercase, numbers, and special characters.
+                            </small>
                         </div>
                         <div class="form-group">
-                            <label>Email</label>
+                            <label>Email <span class="text-danger">*</span></label>
                             <input type="email" name="email" class="form-control" required>
+                            <small class="form-text text-muted email-note">
+                                <i class="fas fa-info-circle"></i> Email is required for password recovery.
+                            </small>
                         </div>
                         <div class="form-group">
                             <label>Full Name</label>
-                            <input type="text" name="full_name" class="form-control" required>
+                            <input type="text" name="full_name" id="add_full_name" class="form-control" pattern="[A-Za-z\s-]+" title="Only letters, spaces, and dashes are allowed" required onkeypress="return /[A-Za-z\s-]/i.test(event.key)">
+                            <small class="form-text text-muted validation-message">
+                                Only letters, spaces, and dashes are allowed
+                            </small>
                         </div>
                         <button type="submit" class="btn btn-primary btn-lg btn-block">Add Admin</button>
                     </form>
@@ -442,7 +499,7 @@ $result = $conn->query($sql);
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="fas fa-user-edit"></i> Edit Admin</h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;"></button>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <form method="POST" id="editAdminForm">
@@ -454,15 +511,31 @@ $result = $conn->query($sql);
                         </div>
                         <div class="form-group">
                             <label>Password (leave blank to keep current)</label>
-                            <input type="password" name="password" class="form-control">
+                            <div class="input-group">
+                                <input type="password" name="password" id="edit_password" class="form-control">
+                                <div class="input-group-append">
+                                    <span class="input-group-text toggle-password" onclick="togglePasswordVisibility('edit_password')">
+                                        <i class="fas fa-eye"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted email-note">
+                                <i class="fas fa-info-circle"></i> Create a strong password with at least 8 characters including uppercase, lowercase, numbers, and special characters.
+                            </small>
                         </div>
                         <div class="form-group">
-                            <label>Email</label>
+                            <label>Email <span class="text-danger">*</span></label>
                             <input type="email" name="email" id="edit_email" class="form-control" required>
+                            <small class="form-text text-muted email-note">
+                                <i class="fas fa-info-circle"></i> Email is required for password recovery.
+                            </small>
                         </div>
                         <div class="form-group">
                             <label>Full Name</label>
-                            <input type="text" name="full_name" id="edit_full_name" class="form-control" required>
+                            <input type="text" name="full_name" id="edit_full_name" class="form-control" pattern="[A-Za-z\s-]+" title="Only letters, spaces, and dashes are allowed" required onkeypress="return /[A-Za-z\s-]/i.test(event.key)">
+                            <small class="form-text text-muted validation-message">
+                                Only letters, spaces, and dashes are allowed
+                            </small>
                         </div>
                         <button type="submit" class="btn btn-primary btn-block">Update Admin</button>
                     </form>
@@ -499,6 +572,68 @@ $result = $conn->query($sql);
             $('#editAdminModal').modal('show');
         });
     }
+    
+    function togglePasswordVisibility(inputId) {
+        const passwordInput = document.getElementById(inputId);
+        const icon = document.querySelector(`[onclick="togglePasswordVisibility('${inputId}')"] i`);
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+    
+    // Function to validate full name input in real-time
+    function validateFullName(input) {
+        const namePattern = /^[A-Za-z\s-]*$/;
+        const validationMessage = input.nextElementSibling;
+        
+        if (!namePattern.test(input.value)) {
+            // Invalid character detected
+            validationMessage.innerHTML = '<i class="fas fa-exclamation-circle text-danger"></i> Numbers and special characters are not allowed';
+            validationMessage.classList.add('text-danger');
+            validationMessage.classList.remove('text-muted');
+            
+            // Force the value to only contain valid characters
+            input.value = input.value.replace(/[^A-Za-z\s-]/g, '');
+        } else if (input.value.length > 0) {
+            // Valid input
+            validationMessage.innerHTML = '<i class="fas fa-check-circle text-success"></i> Valid name format';
+            validationMessage.classList.remove('text-danger', 'text-muted');
+            validationMessage.classList.add('text-success');
+        } else {
+            // Empty input
+            validationMessage.innerHTML = '<i class="fas fa-info-circle"></i> Only letters, spaces, and dashes are allowed';
+            validationMessage.classList.remove('text-danger', 'text-success');
+            validationMessage.classList.add('text-muted');
+        }
+    }
+    
+    // Add event listeners when the document is ready
+    $(document).ready(function() {
+        // Add event listeners to full name inputs
+        $('#add_full_name, #edit_full_name').on('input', function() {
+            validateFullName(this);
+        });
+        
+        // Additional layer of protection - prevent pasting invalid characters
+        $('#add_full_name, #edit_full_name').on('paste', function(e) {
+            // Get pasted data
+            let pastedData = (e.originalEvent.clipboardData || window.clipboardData).getData('text');
+            // Replace any invalid characters
+            pastedData = pastedData.replace(/[^A-Za-z\s-]/g, '');
+            
+            // Cancel the paste event
+            e.preventDefault();
+            // Insert the cleaned data
+            document.execCommand('insertText', false, pastedData);
+        });
+    });
     </script>
 </body>
 </html>

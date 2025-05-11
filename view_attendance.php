@@ -21,6 +21,8 @@
             box-shadow: 0 0 25px rgba(0, 0, 0, 0.05);
             margin-top: 30px;
             margin-bottom: 30px;
+            max-height: 85vh;
+            overflow-y: auto;
         }
 
         h2 {
@@ -210,6 +212,48 @@
                 margin-top: 15px;
             }
         }
+
+        /* Scrollbar styling */
+        .container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .container::-webkit-scrollbar-thumb {
+            background: #4F6F52;
+            border-radius: 10px;
+        }
+        
+        .container::-webkit-scrollbar-thumb:hover {
+            background: #3A4D39;
+        }
+
+        .table-responsive {
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+        
+        .table-responsive::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #4F6F52;
+            border-radius: 10px;
+        }
+        
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #3A4D39;
+        }
     </style>
 </head>
 <body>
@@ -220,18 +264,14 @@
             <form method="POST" class="d-flex align-items-center justify-content-center flex-wrap gap-3">
                 <label for="month">Select Month:</label>
                 <select name="month" id="month" class="form-control-sm">
-                    <option value="1">January</option>
-                    <option value="2">February</option>
-                    <option value="3">March</option>
-                    <option value="4">April</option>
-                    <option value="5">May</option>
-                    <option value="6">June</option>
-                    <option value="7">July</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
+                    <?php
+                    $current_month = date('n'); // Current month number (1-12)
+                    for($m = 1; $m <= 12; $m++) {
+                        $month_name = date('F', mktime(0, 0, 0, $m, 1));
+                        $selected = ($m == $current_month) ? 'selected' : '';
+                        echo "<option value='$m' $selected>$month_name</option>";
+                    }
+                    ?>
                 </select>
 
                 <label for="year">Select Year:</label>
@@ -240,7 +280,8 @@
                     $currentYear = date('Y');
                     $startYear = 2020; // You can adjust the start year as needed
                     for($year = $currentYear; $year >= $startYear; $year--) {
-                        echo "<option value='$year'>$year</option>";
+                        $selected = ($year == $currentYear) ? 'selected' : '';
+                        echo "<option value='$year' $selected>$year</option>";
                     }
                     ?>
                 </select>
@@ -273,16 +314,7 @@
             $employee_id = $_GET['employee_id']; // Assuming you're passing employee_id via GET parameter
 
             // Calculate the number of days in the selected month
-            $days_in_month = cal_days_in_month(CAL_GREGORIAN, $selected_month, $selected_year);
-            
-            // Calculate working days and rest days more accurately
             $total_days = cal_days_in_month(CAL_GREGORIAN, $selected_month, $selected_year);
-            $first_day = "$selected_year-$selected_month-01";
-            $last_day = "$selected_year-$selected_month-$total_days";
-            
-            // Calculate number of complete weeks and remaining days
-            $first_day_timestamp = strtotime($first_day);
-            $last_day_timestamp = strtotime($last_day);
             
             // Get employee's configured rest days
             $sql_rest_days = "SELECT Monday_Rest, Tuesday_Rest, Wednesday_Rest, Thursday_Rest, 
@@ -292,34 +324,80 @@
             $rest_days_result = $conn->query($sql_rest_days);
             $rest_days_config = $rest_days_result->fetch_assoc();
             
-            // Calculate rest days and working days based on employee's schedule
+            // Count rest days in the month
             $rest_days = 0;
-            $total_working_days = $total_days; // Start with total days
-            
-            // Loop through each day of the month
             for ($day = 1; $day <= $total_days; $day++) {
                 $date = date('Y-m-d', strtotime("$selected_year-$selected_month-$day"));
-                $day_of_week = date('N', strtotime($date)); // 1 (Monday) through 7 (Sunday)
+                $day_of_week = date('N', strtotime($date)); // 1-7 for Monday-Sunday
                 
-                // Check if this day is configured as a rest day for the employee
-                $is_rest_day = false;
                 switch ($day_of_week) {
-                    case 1: $is_rest_day = $rest_days_config['Monday_Rest'] == 1; break;
-                    case 2: $is_rest_day = $rest_days_config['Tuesday_Rest'] == 1; break;
-                    case 3: $is_rest_day = $rest_days_config['Wednesday_Rest'] == 1; break;
-                    case 4: $is_rest_day = $rest_days_config['Thursday_Rest'] == 1; break;
-                    case 5: $is_rest_day = $rest_days_config['Friday_Rest'] == 1; break;
-                    case 6: $is_rest_day = $rest_days_config['Saturday_Rest'] == 1; break;
-                    case 7: $is_rest_day = $rest_days_config['Sunday_Rest'] == 1; break;
-                }
-                
-                if ($is_rest_day) {
-                    $rest_days++;
-                    $total_working_days--; // Subtract rest days from total days
+                    case 1: if ($rest_days_config['Monday_Rest'] == 1) $rest_days++; break;
+                    case 2: if ($rest_days_config['Tuesday_Rest'] == 1) $rest_days++; break;
+                    case 3: if ($rest_days_config['Wednesday_Rest'] == 1) $rest_days++; break;
+                    case 4: if ($rest_days_config['Thursday_Rest'] == 1) $rest_days++; break;
+                    case 5: if ($rest_days_config['Friday_Rest'] == 1) $rest_days++; break;
+                    case 6: if ($rest_days_config['Saturday_Rest'] == 1) $rest_days++; break;
+                    case 7: if ($rest_days_config['Sunday_Rest'] == 1) $rest_days++; break;
                 }
             }
+            
+            // Get all holidays in the selected month
+            $holiday_dates = array();
+            $regular_holidays = array();
+            $special_holidays = array();
+            $sql_holidays = "SELECT holiday_date, holiday_type FROM holidays 
+                             WHERE MONTH(holiday_date) = $selected_month 
+                             AND YEAR(holiday_date) = $selected_year";
+            $holidays_result = $conn->query($sql_holidays);
+            
+            if ($holidays_result && $holidays_result->num_rows > 0) {
+                while ($holiday_row = $holidays_result->fetch_assoc()) {
+                    $holiday_date = $holiday_row['holiday_date'];
+                    $holiday_type = $holiday_row['holiday_type'];
+                    
+                    $holiday_dates[] = $holiday_date;
+                    
+                    if (strtolower($holiday_type) == 'regular') {
+                        $regular_holidays[] = $holiday_date;
+                    } else if (strtolower($holiday_type) == 'special') {
+                        $special_holidays[] = $holiday_date;
+                    }
+                }
+            }
+            
+            // Get all dates with recorded attendance for the employee
+            $sql_attendance = "SELECT COUNT(DISTINCT DATE(LOGDATE)) as attendance_count
+                             FROM attendance 
+                             WHERE MONTH(LOGDATE) = $selected_month 
+                             AND YEAR(LOGDATE) = $selected_year
+                             AND EMPLOYEEID = $employee_id
+                             AND TIMEIN IS NOT NULL";
+            $attendance_result = $conn->query($sql_attendance);
+            
+            // Debug the query
+            error_log("Attendance Query: " . $sql_attendance);
+            error_log("Employee ID: " . $employee_id);
+            error_log("Selected Month: " . $selected_month);
+            error_log("Selected Year: " . $selected_year);
+            
+            $days_with_attendance = 0;
+            if ($attendance_result) {
+                $row = $attendance_result->fetch_assoc();
+                $days_with_attendance = $row['attendance_count'];
+                error_log("Attendance Count: " . $days_with_attendance);
+            } else {
+                error_log("Query Error: " . $conn->error);
+            }
+            
+            // Calculate working days (total days - rest days - holidays)
+            $working_days = $total_days - $rest_days - count($holiday_dates);
+            
+            // Calculate absences (working days - days with attendance)
+            $absences = $working_days - $days_with_attendance;
 
-            // Fetch attendance records
+            // Calculate total hours
+            $total_hours = 0;
+            $work_hours_data = array();
             $sql = "SELECT a.*, e.`First Name`, e.`Last Name`, e.Department,
                    TIMEDIFF(a.TIMEOUT, a.TIMEIN) as work_hours
                    FROM attendance a 
@@ -327,51 +405,75 @@
                    WHERE MONTH(a.LOGDATE) = $selected_month 
                    AND YEAR(a.LOGDATE) = $selected_year
                    AND a.EMPLOYEEID = $employee_id
-                   AND (a.TIMEOUT IS NOT NULL OR 
-                        (a.TIMEOUT IS NULL AND (a.STATUS LIKE '%No TimeOut%' OR TIME(NOW()) >= '19:00:00')))
                    ORDER BY a.LOGDATE DESC, a.TIMEIN DESC";
             $result = $conn->query($sql);
 
-            // Calculate total absences and work hours
-            $attendance_dates = array();
-            $total_hours = 0;
             if ($result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
-                    $attendance_dates[] = $row['LOGDATE'];
+                    $work_hours = '-';
+                    $diff_seconds = 0;
+                    
                     if ($row['TIMEOUT'] !== null) {
-                        $work_hours = $row['work_hours'];
-                        $total_hours += strtotime($work_hours) - strtotime('TODAY');
+                        // Debug the raw values for troubleshooting
+                        error_log("Raw TIMEIN: " . $row['TIMEIN'] . ", Raw TIMEOUT: " . $row['TIMEOUT'] . ", Date: " . $row['LOGDATE']);
+                        
+                        // Use strtotime directly on the datetime values
+                        $time_in_seconds = strtotime($row['TIMEIN']);
+                        $time_out_seconds = strtotime($row['TIMEOUT']);
+                        
+                        // If conversion failed, try with explicit format
+                        if (!$time_in_seconds || !$time_out_seconds) {
+                            error_log("Time conversion failed, trying with explicit format");
+                            // Extract time parts using a more reliable method
+                            if (preg_match('/(\d{1,2}):(\d{1,2}):(\d{1,2})/', $row['TIMEIN'], $time_in_parts) && 
+                                preg_match('/(\d{1,2}):(\d{1,2}):(\d{1,2})/', $row['TIMEOUT'], $time_out_parts)) {
+                                
+                                $time_in_seconds = strtotime("1970-01-01 " . $time_in_parts[0]);
+                                $time_out_seconds = strtotime("1970-01-01 " . $time_out_parts[0]);
+                            }
+                        }
+                        
+                        // Calculate difference in seconds if both times are valid
+                        if ($time_in_seconds && $time_out_seconds) {
+                            $diff_seconds = $time_out_seconds - $time_in_seconds;
+                            
+                            // Handle potential negative values (if timeout is earlier than timein)
+                            if ($diff_seconds < 0) {
+                                error_log("Negative time difference detected, adjusting calculation");
+                                $diff_seconds += 86400;
+                            }
+                            
+                            // Log raw time difference for debugging
+                            error_log("Raw time difference in seconds: " . $diff_seconds);
+                            
+                            // Only subtract break time if worked more than 4 hours (14400 seconds)
+                            if ($diff_seconds > 14400) {
+                                $diff_seconds = max(0, $diff_seconds - 3600); // Subtract 1 hour break
+                                error_log("Subtracting break time, new diff: " . $diff_seconds);
+                            }
+                            
+                            // Convert to hours and minutes
+                            $hours = floor($diff_seconds / 3600);
+                            $minutes = floor(($diff_seconds % 3600) / 60);
+                            
+                            $work_hours = $hours . ' hrs ' . $minutes . ' mins';
+                            error_log("Calculated work hours: " . $work_hours . " from diff_seconds: " . $diff_seconds);
+                        } else {
+                            error_log("Could not convert time values: TIMEIN=" . $row['TIMEIN'] . ", TIMEOUT=" . $row['TIMEOUT']);
+                            $work_hours = '0 hrs 0 mins';
+                        }
+                    } else {
+                        $work_hours = 'No Timeout';
                     }
+                    
+                    $work_hours_data[] = $work_hours;
+                    $total_hours += $diff_seconds;
                 }
             }
 
-            // Calculate absences (only counting non-rest days)
-            $absences = 0;
-            for ($day = 1; $day <= $total_days; $day++) {
-                $date = date('Y-m-d', strtotime("$selected_year-$selected_month-$day"));
-                $day_of_week = date('N', strtotime($date));
-                
-                // Check if this is a rest day for the employee
-                $is_rest_day = false;
-                switch ($day_of_week) {
-                    case 1: $is_rest_day = $rest_days_config['Monday_Rest'] == 1; break;
-                    case 2: $is_rest_day = $rest_days_config['Tuesday_Rest'] == 1; break;
-                    case 3: $is_rest_day = $rest_days_config['Wednesday_Rest'] == 1; break;
-                    case 4: $is_rest_day = $rest_days_config['Thursday_Rest'] == 1; break;
-                    case 5: $is_rest_day = $rest_days_config['Friday_Rest'] == 1; break;
-                    case 6: $is_rest_day = $rest_days_config['Saturday_Rest'] == 1; break;
-                    case 7: $is_rest_day = $rest_days_config['Sunday_Rest'] == 1; break;
-                }
-                
-                // Only count absences on non-rest days
-                if (!$is_rest_day && !in_array($date, $attendance_dates)) {
-                    $absences++;
-                }
-            }
-
-            // Format total hours
+            // Calculate total hours formatted
             $total_hours_formatted = sprintf(
-                '%02d:%02d',
+                '%d hours %d minutes',
                 floor($total_hours / 3600),
                 floor(($total_hours / 60) % 60)
             );
@@ -388,7 +490,15 @@
                 $employee_department = $employee_row['Department'];
             
                 echo '<div class="employee-info">';
-                echo '<img src="data:image/jpeg;base64,' . base64_encode($employee_image) . '" alt="Employee Image">';
+                // Check if image exists and is not empty
+                if (!empty($employee_image)) {
+                    echo '<img src="data:image/jpeg;base64,' . base64_encode($employee_image) . '" alt="Employee Image">';
+                } else {
+                    // Display default image if no image is available
+                    echo '<div style="width:100px; height:100px; border-radius:50%; background-color:#4F6F52; display:flex; align-items:center; justify-content:center; margin:0 auto;">';
+                    echo '<i class="fas fa-user" style="color:white; font-size:40px;"></i>';
+                    echo '</div>';
+                }
                 echo '<div class="employee-details">';
                 echo '<div class="employee-name">' . $employee_name . '</div>';
                 echo '<div class="employee-department"><i class="fas fa-building mr-2"></i>' . $employee_department . '</div>';
@@ -409,16 +519,21 @@
                 echo '<div class="alert alert-info mb-4">
                     <div class="row">
                         <div class="col-md-3">
-                            <strong><i class="fas fa-calendar-day"></i> Working Days:</strong> ' . $total_working_days . ' days
+                            <strong><i class="fas fa-calendar-day"></i> Working Days:</strong> ' . $working_days . ' days
                         </div>
                         <div class="col-md-3">
                             <strong><i class="fas fa-bed"></i> Rest Days:</strong> ' . $rest_days . ' days
                         </div>
-                        <div class="col-md-3">
-                            <strong><i class="fas fa-user-times"></i> Absences:</strong> ' . $absences . ' days
+                        <div class="col-md-2">
+                            <strong><i class="fas fa-star"></i> Holidays:</strong> ' . count($holiday_dates) . ' days
                         </div>
-                        <div class="col-md-3">
-                            <strong><i class="fas fa-clock"></i> Total Hours:</strong> ' . floor($total_hours / 3600) . ' hours ' . floor(($total_hours / 60) % 60) . ' minutes
+                        <div class="col-md-2">
+                            <strong><i class="fas fa-user-times"></i> Absences:</strong> ' . $absences . ' days
+                            <small class="d-block text-muted">Work: ' . $working_days . ', Present: ' . $days_with_attendance . '</small>
+                        </div>
+                        <div class="col-md-2">
+                            <strong><i class="fas fa-clock"></i> Total Hours:</strong> ' . $total_hours_formatted . '
+                            <small class="d-block text-muted">(Break time excluded)</small>
                         </div>
                     </div>
                 </div>';
@@ -440,15 +555,61 @@
                 while ($row = $result->fetch_assoc()) {
                     $work_hours = '-';
                     if ($row['TIMEOUT'] !== null) {
-                        $time_diff = strtotime($row['work_hours']) - strtotime('TODAY');
-                        $hours = floor($time_diff / 3600);
-                        $minutes = floor(($time_diff % 3600) / 60);
-                        $work_hours = $hours . ' hrs ' . $minutes . ' mins';
+                        // Debug the raw values for troubleshooting
+                        error_log("Raw TIMEIN: " . $row['TIMEIN'] . ", Raw TIMEOUT: " . $row['TIMEOUT'] . ", Date: " . $row['LOGDATE']);
+                        
+                        // Use strtotime directly on the datetime values
+                        $time_in_seconds = strtotime($row['TIMEIN']);
+                        $time_out_seconds = strtotime($row['TIMEOUT']);
+                        
+                        // If conversion failed, try with explicit format
+                        if (!$time_in_seconds || !$time_out_seconds) {
+                            error_log("Time conversion failed, trying with explicit format");
+                            // Extract time parts using a more reliable method
+                            if (preg_match('/(\d{1,2}):(\d{1,2}):(\d{1,2})/', $row['TIMEIN'], $time_in_parts) && 
+                                preg_match('/(\d{1,2}):(\d{1,2}):(\d{1,2})/', $row['TIMEOUT'], $time_out_parts)) {
+                                
+                                $time_in_seconds = strtotime("1970-01-01 " . $time_in_parts[0]);
+                                $time_out_seconds = strtotime("1970-01-01 " . $time_out_parts[0]);
+                            }
+                        }
+                        
+                        // Calculate difference in seconds if both times are valid
+                        if ($time_in_seconds && $time_out_seconds) {
+                            $diff_seconds = $time_out_seconds - $time_in_seconds;
+                            
+                            // Handle potential negative values (if timeout is earlier than timein)
+                            if ($diff_seconds < 0) {
+                                error_log("Negative time difference detected, adjusting calculation");
+                                $diff_seconds += 86400;
+                            }
+                            
+                            // Log raw time difference for debugging
+                            error_log("Raw time difference in seconds: " . $diff_seconds);
+                            
+                            // Only subtract break time if worked more than 4 hours (14400 seconds)
+                            if ($diff_seconds > 14400) {
+                                $diff_seconds = max(0, $diff_seconds - 3600); // Subtract 1 hour break
+                                error_log("Subtracting break time, new diff: " . $diff_seconds);
+                            }
+                            
+                            // Convert to hours and minutes
+                            $hours = floor($diff_seconds / 3600);
+                            $minutes = floor(($diff_seconds % 3600) / 60);
+                            
+                            $work_hours = $hours . ' hrs ' . $minutes . ' mins';
+                            error_log("Calculated work hours: " . $work_hours . " from diff_seconds: " . $diff_seconds);
+                        } else {
+                            error_log("Could not convert time values: TIMEIN=" . $row['TIMEIN'] . ", TIMEOUT=" . $row['TIMEOUT']);
+                            $work_hours = '0 hrs 0 mins';
+                        }
+                    } else {
+                        $work_hours = 'No Timeout';
                     }
                     echo "<tr>";
                     echo "<td style='font-family: Poppins;'>" . $row['LOGDATE'] . "</td>";
                     echo "<td style='font-family: Poppins;'>" . $row['TIMEIN'] . "</td>";
-                    echo "<td style='font-family: Poppins;'>" . $row['TIMEOUT'] . "</td>";
+                    echo "<td style='font-family: Poppins;'>" . ($row['TIMEOUT'] ? $row['TIMEOUT'] : 'Not recorded') . "</td>";
                     echo "<td style='font-family: Poppins;'>" . $work_hours . "</td>";
                     echo "<td style='font-family: Poppins;'>" . $row['STATUS'] . "</td>";
                     echo "</tr>";
@@ -477,5 +638,15 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+        // Auto-submit the form when the page loads if it hasn't been submitted before
+        $(document).ready(function() {
+            <?php if (!isset($_POST['submit'])) { ?>
+                // Submit the form automatically
+                $('form').submit();
+            <?php } ?>
+        });
+    </script>
 </body>
 </html>

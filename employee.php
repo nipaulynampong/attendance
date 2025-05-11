@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Employee Details</title>
+    <link rel="icon" href="1.png" type="image/png">
+    <link rel="stylesheet" href="iframe-style.css">
     
     <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
@@ -15,14 +17,14 @@
       /* CSS styles for layout and design */
       body {
         font-family: 'Poppins', sans-serif;
-        background-color: white;
+        background-color: #f5efe6; /* Match the container background color */
         color: #333;
         margin: 0;
-        padding: 0;
+        padding: 20px; /* Add padding to replace the container padding */
       }
 
       .container {
-        max-width: 1420px;
+        width: 95%;
         position: relative;
         margin: 20px auto;
         padding: 25px;
@@ -30,14 +32,63 @@
         color: #333;
         border-radius: 20px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        height: auto; /* Changed from fixed height to auto */
+        min-height: 80vh; /* Minimum height instead of fixed */
+        max-height: 90vh; /* Maximum height to prevent excessive scrolling */
+        overflow-y: auto; /* Only show scrollbar when needed */
       }
 
+      /* Scrollbar styling for container */
+      .container::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+
+      .container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      .container::-webkit-scrollbar-thumb {
+        background: #4F6F52;
+        border-radius: 10px;
+      }
+
+      .container::-webkit-scrollbar-thumb:hover {
+        background: #3A4D39;
+      }
+
+      /* Section to contain the table with scroll */
       .section {
         margin-bottom: 20px;
         background-color: white;
         border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        overflow-x: auto;
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* Scrollbar styling for section */
+      .section::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+
+      .section::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      .section::-webkit-scrollbar-thumb {
+        background: #4F6F52;
+        border-radius: 10px;
+      }
+
+      .section::-webkit-scrollbar-thumb:hover {
+        background: #3A4D39;
       }
 
       .section-header {
@@ -201,17 +252,39 @@
 
       /* Table styles */
       table {
-        width: 100%;
+        width: 100%; /* Set to 100% to match section width */
+        table-layout: fixed; /* Added fixed table layout for better control */
+        margin-left: auto;
+        margin-right: auto;
         border-collapse: separate;
         border-spacing: 0;
-        margin-top: 20px; 
-        overflow: hidden;
+        margin-top: 20px;
+        table-layout: fixed; /* Fixed layout for better control */
       }
 
       th, td {
         padding: 15px;
         text-align: left;
         font-family: 'Poppins', sans-serif;
+        white-space: nowrap;
+      }
+
+      /* Column widths for better control */
+      th:nth-child(1), td:nth-child(1) { width: 60px; } /* Image */
+      th:nth-child(2), td:nth-child(2) { width: 90px; } /* Employee ID */
+      th:nth-child(3), td:nth-child(3), 
+      th:nth-child(4), td:nth-child(4),
+      th:nth-child(5), td:nth-child(5) { width: 100px; } /* Names */
+      th:nth-child(6), td:nth-child(6) { width: 90px; } /* Department */
+      th:nth-child(7), td:nth-child(7) { width: 100px; } /* Rest Days */
+      th:nth-child(8), td:nth-child(8) { width: 140px; } /* View Details */
+      th:nth-child(9), td:nth-child(9) { width: 100px; } /* Action buttons */
+
+      /* Ensure content doesn't overflow */
+      td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        border-bottom: 1px solid #eee;
       }
 
       th {
@@ -243,11 +316,6 @@
         border-bottom-right-radius: 10px;
       }
 
-      td {
-        border-bottom: 1px solid #eee;
-        white-space: nowrap;  /* Prevent line breaks between dashes and buttons */
-      }
-
       tr:hover {
         background-color: #f0f7f0;
       }
@@ -257,16 +325,17 @@
         background-color: #4F6F52;
         color: white;
         border: none;
-        padding: 8px 12px;
+        padding: 6px 10px;
         border-radius: 6px;
         cursor: pointer;
         font-weight: 500;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         transition: all 0.3s ease;
         display: inline-flex;
         align-items: center;
-        gap: 5px;
-        margin: 0 5px;  /* Add space between button and dashes */
+        gap: 3px;
+        margin: 2px;
+        white-space: nowrap;
       }
 
       .action-btn:hover {
@@ -286,6 +355,10 @@
         object-fit: cover;
         border: 2px solid #4F6F52;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: white;
       }
 
       /* Show entries dropdown */
@@ -344,7 +417,6 @@
     </style>
   </head>
   <body>
-  <div class="container" id="main-container">
     <div class="header-section" style="display: flex; align-items: center; margin-bottom: 25px; gap: 20px;">
       <h1 class="page-title" style="margin-bottom: 0; margin-right: 20px; white-space: nowrap;"><i class="fas fa-users"></i> Manage Employee Details</h1>
       <div class="search-container" style="margin: 0; flex-grow: 1; max-width: 500px;">
@@ -413,6 +485,12 @@
           // Add conditions to filter by Employee ID, Last Name, First Name, or Department
           $sql .= " WHERE EmployeeID LIKE '%$search%' OR `Last Name` LIKE '%$search%' OR `First Name` LIKE '%$search%' OR Department LIKE '%$search%'";
       }
+      
+      // Order by most recent first - using the auto-increment ID which is more reliable
+      $sql .= " ORDER BY id DESC";
+      
+      // For debugging - uncomment to see the actual query
+      // echo "<p>Debug - SQL Query: $sql</p>";
 
       $result = $conn->query($sql);
 
@@ -439,7 +517,16 @@
               }
               
               echo "<tr>";
-              echo "<td><img src='data:image/jpeg;base64," . base64_encode($row['Image']) . "' alt='Employee Image' class='employee-img'></td>";
+              // Check if image exists and is not empty
+              echo "<td style='text-align:center;'>";
+              if (!empty($row['Image']) && $row['Image'] != null) {
+                  // Simple direct image display approach
+                  echo "<img src='data:image/jpeg;base64," . base64_encode($row['Image']) . "' alt='Employee Image' style='width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #4F6F52;'>";
+              } else {
+                  // Display default image if no image is available
+                  echo "<div style='width:50px; height:50px; border-radius:50%; background-color:#4F6F52; display:flex; align-items:center; justify-content:center; margin:0 auto;'><i class='fas fa-user' style='color:white; font-size:20px;'></i></div>";
+              }
+              echo "</td>";
               echo "<td>" . $row["EmployeeID"] . "</td>";
               echo "<td>" . $row["Last Name"] . "</td>";
               echo "<td>" . $row["First Name"] . "</td>";
@@ -451,8 +538,10 @@
               echo "<button class='action-btn' onclick='showDetails(" . $row["EmployeeID"] . ")'><i class='fas fa-eye'></i> View</button>";
               echo "</td>";
               echo "<td>";
+              echo "<div style='display:flex; flex-direction:column; gap:5px;'>";
               echo "<button class='action-btn' onclick='updateEmployee(" . $row["EmployeeID"] . ")'><i class='fas fa-edit'></i> Update</button>";
               echo "<button class='action-btn' onclick='archiveEmployee(" . $row["EmployeeID"] . ")'><i class='fas fa-archive'></i> Archive</button>";
+              echo "</div>";
               echo "</td>";
               echo "</tr>";
           }
@@ -604,19 +693,31 @@ function showQRDetails(employeeID) {
 
   // Function to archive an employee
   function archiveEmployee(employeeID) {
-    if (confirm("Are you sure you want to archive this employee?")) {
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                alert("Employee archived successfully!");
-                location.reload();
+    // First fetch the employee name
+    var nameXhttp = new XMLHttpRequest();
+    nameXhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var employeeName = this.responseText;
+            // Show confirmation with employee name
+            if (confirm("Are you sure you want to archive " + employeeName + "?")) {
+                var archiveXhttp = new XMLHttpRequest();
+                archiveXhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        alert("Employee archived successfully!");
+                        location.reload();
+                    }
+                };
+                archiveXhttp.open("GET", "archive_employee.php?id=" + employeeID, true);
+                archiveXhttp.send();
             }
-        };
-        xhttp.open("GET", "archive_employee.php?id=" + employeeID, true);
-        xhttp.send();
-    }
+        }
+    };
+    nameXhttp.open("GET", "get_employee_name.php?id=" + employeeID, true);
+    nameXhttp.send();
 }
   </script>
-
+  
+  <!-- Resize iframe script -->
+  <script src="iframe-resize.js"></script>
   </body>
 </html>

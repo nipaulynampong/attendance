@@ -12,6 +12,8 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap">
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             background-color: white;
@@ -22,11 +24,31 @@
             padding: 20px;
             background-color:#f5efe6;
             border-radius: 10px;
-            overflow: hidden;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             max-width: 1300px; /* Adjust the maximum width as needed */
             margin-top: 10px;
+            max-height: 85vh;
+            overflow-y: scroll;
+        }
+        
+        /* Scrollbar styling for container */
+        .container::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
 
+        .container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: #4F6F52;
+            border-radius: 10px;
+        }
+
+        .container::-webkit-scrollbar-thumb:hover {
+            background: #3A4D39;
         }
 
         .table {
@@ -119,14 +141,34 @@
             </thead>
             <tbody>
                 <?php
-                // Table data query
-                $sql = "SELECT * FROM employee ORDER BY Department, `Last Name`, `First Name`";
+              
+                // Modified query to handle image data more carefully
+                $sql = "SELECT EmployeeID, `Last Name`, `First Name`, Department, 
+                       CASE WHEN Image IS NULL OR LENGTH(Image) < 100 THEN 0 ELSE 1 END AS has_valid_image 
+                       FROM employee ORDER BY Department, `Last Name`, `First Name`";
                 $result = $conn->query($sql);
 
                 if ($result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
                         echo "<tr>";
-                        echo "<td><img src='data:image/jpeg;base64," . base64_encode($row['Image']) . "' alt='Employee Image' style='width:50px;height:50px;'></td>";
+                        
+                        // Check if image exists using our database-level check
+                        if ($row['has_valid_image'] == 1) {
+                            // Get the image directly with a separate query
+                            $img_sql = "SELECT Image FROM employee WHERE EmployeeID = " . $row['EmployeeID'];
+                            $img_result = $conn->query($img_sql);
+                            $img_row = $img_result->fetch_assoc();
+                            
+                            // Display the image
+                            echo "<td><img src='data:image/jpeg;base64," . base64_encode($img_row['Image']) . "' alt='Employee Image' style='width:50px;height:50px;border-radius:50%;object-fit:cover;'></td>";
+                        } else {
+                            // Display default image with Font Awesome icon
+                            echo "<td>
+                                <div style='width:50px;height:50px;border-radius:50%;background-color:#4F6F52;display:flex;align-items:center;justify-content:center;'>
+                                    <i class='fas fa-user' style='color:white;font-size:28px;'></i>
+                                </div>
+                            </td>";
+                        }
                         echo "<td>" . $row['EmployeeID'] . "</td>";
                         echo "<td>" . $row['Last Name'] . ", " . $row['First Name'] . "</td>";
                         echo "<td>" . $row['Department'] . "</td>";

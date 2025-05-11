@@ -37,11 +37,12 @@ if ($stmt->num_rows > 0) {
     $stmt->bind_result($image);
     $stmt->fetch();
     
-    if ($image) {
+    // Check if image exists and is valid (not null and has sufficient length)
+    if (isset($image) && $image !== null && strlen($image) > 100) {
         // Output the image data
         echo $image;
     } else {
-        // No image found, return placeholder
+        // No valid image found, return placeholder
         readfile('placeholder.jpg');
     }
 } else {

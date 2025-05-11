@@ -21,6 +21,28 @@
             background-color: #f5efe6;
             border-radius: 15px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            max-height: 85vh;
+            overflow-y: scroll;
+        }
+
+        /* Scrollbar styling for container */
+        .container::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: #4F6F52;
+            border-radius: 10px;
+        }
+
+        .container::-webkit-scrollbar-thumb:hover {
+            background: #3A4D39;
         }
 
         .header {
@@ -110,6 +132,18 @@
             overflow: hidden;
         }
 
+        /* Column width control */
+        th:nth-child(1), td:nth-child(1) { width: 5%; } /* ID */
+        th:nth-child(2), td:nth-child(2) { width: 6%; } /* Image */
+        th:nth-child(3), td:nth-child(3) { width: 15%; } /* Name */
+        th:nth-child(4), td:nth-child(4) { width: 5%; } /* Age */
+        th:nth-child(5), td:nth-child(5) { width: 8%; } /* Birthday */
+        th:nth-child(6), td:nth-child(6) { width: 22%; } /* Address */
+        th:nth-child(7), td:nth-child(7) { width: 6%; } /* Gender */
+        th:nth-child(8), td:nth-child(8) { width: 10%; } /* Contact */
+        th:nth-child(9), td:nth-child(9) { width: 13%; } /* Email */
+        th:nth-child(10), td:nth-child(10) { width: 10%; } /* Department */
+
         th, td {
             text-align: left;
             padding: 15px;
@@ -138,8 +172,10 @@
             body {
                 background-color: white;
                 margin: 0;
-                padding: 20px;
-                font-size: 12pt;
+                padding: 0;
+                font-size: 11pt;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
             .container {
@@ -149,6 +185,8 @@
                 padding: 0;
                 box-shadow: none;
                 background-color: white;
+                overflow: visible;
+                max-height: none;
             }
 
             .header {
@@ -158,8 +196,9 @@
             }
 
             h2 {
-                font-size: 16pt;
+                font-size: 18pt;
                 margin-bottom: 10px;
+                text-align: center;
             }
 
             #searchForm, .print-button {
@@ -171,6 +210,7 @@
                 border-collapse: collapse;
                 margin-top: 10px;
                 page-break-inside: auto;
+                font-size: 9pt;
             }
 
             tr {
@@ -192,17 +232,18 @@
             td {
                 padding: 6px 8px;
                 border-bottom: 1px solid #ddd;
-                font-size: 10pt;
+                font-size: 8pt;
+                line-height: 1.2;
             }
 
             td img {
-                max-width: 40px;
-                height: 40px;
+                max-width: 30px;
+                height: 30px;
             }
 
             @page {
                 size: landscape;
-                margin: 2cm;
+                margin: 0.5cm;
             }
 
             thead {
@@ -211,6 +252,16 @@
 
             tfoot {
                 display: table-footer-group;
+            }
+            
+            /* Add page title and date */
+            .container:before {
+                content: "Employee Information Report - Printed on " attr(data-print-date);
+                display: block;
+                text-align: center;
+                font-size: 14pt;
+                font-weight: bold;
+                margin-bottom: 15px;
             }
         }
 
@@ -241,7 +292,7 @@
                     <i class="fas fa-search search-icon"></i>
                 </div>
             </form>
-            <button class="print-button" onclick="window.print()">
+            <button class="print-button" id="print-btn">
                 <i class="fas fa-print"></i>
                 Print Report
             </button>
@@ -265,42 +316,40 @@
                 </thead>
                 <tbody>
                     <?php
-// Database connection
-$servername = "localhost"; // Change this to your database server name
-$username = "root"; // Change this to your database username
-$password = ""; // Change this to your database password
-$dbname = "hris"; // Change this to your database name
+
+$servername = "localhost"; 
+$username = "root"; 
+$password = ""; 
+$dbname = "hris"; 
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check connection
+
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-
-// Initialize the SQL query
 $sql = "SELECT * FROM employee";
-
-// Check if a search query is provided
 if(isset($_GET['search'])) {
     $search = $_GET['search'];
  
-    // Add conditions to filter by Employee ID, Last Name, First Name, or Department
+    
     $sql .= " WHERE EmployeeID LIKE '%$search%' OR CONCAT(`Last Name`, ' ', `First Name`, ' ', `Middle Name`, ' ', `Suffix`) LIKE '%$search%' OR Department LIKE '%$search%'";
 }
-
-// Add ORDER BY clause to sort by Last Name
 $sql .= " ORDER BY `Last Name` ASC";
 
 $result = $conn->query($sql);
-
 if ($result->num_rows > 0) {
-    // Output data of each row
+    
     while($row = $result->fetch_assoc()) {
         echo "<tr>";
         echo "<td>" . $row["EmployeeID"] . "</td>";
-        // Add image column
-        echo "<td><img src='data:image/jpeg;base64," . base64_encode($row["Image"]) . "' alt='Employee Image' style='width: 50px; height: 50px; border-radius: 50%; object-fit: cover;'></td>";
+        // Check if image exists and is not empty
+        if (!empty($row["Image"])) {
+            echo "<td><img src='data:image/jpeg;base64," . base64_encode($row["Image"]) . "' alt='Employee Image' style='width: 50px; height: 50px; border-radius: 50%; object-fit: cover;'></td>";
+        } else {
+            // Display default image if no image is available
+            echo "<td><div style='width: 50px; height: 50px; border-radius: 50%; background-color: #4F6F52; display: flex; align-items: center; justify-content: center;'><i class='fas fa-user' style='color: white; font-size: 20px;'></i></div></td>";
+        }
         echo "<td>" . $row["Last Name"] . " " . $row["First Name"] . " " . $row["Middle Name"] . " " . $row["Suffix"] . "</td>";
         echo "<td>" . $row["Age"] . "</td>";
         echo "<td>" . $row["Birthday"] . "</td>";
@@ -342,6 +391,33 @@ $conn->close();
             if (this.value.trim() === '') {
                 refreshTable();
             }
+        });
+
+        // Set date attribute for printing
+        document.addEventListener('DOMContentLoaded', function() {
+            // Format current date
+            var now = new Date();
+            var options = { year: 'numeric', month: 'long', day: 'numeric' };
+            var formattedDate = now.toLocaleDateString('en-US', options);
+            
+            // Set the date attribute for printing
+            document.querySelector('.container').setAttribute('data-print-date', formattedDate);
+        });
+
+        // Better print function to ensure styles are applied
+        document.querySelector('#print-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Update date attribute before printing
+            var now = new Date();
+            var options = { year: 'numeric', month: 'long', day: 'numeric' };
+            var formattedDate = now.toLocaleDateString('en-US', options);
+            document.querySelector('.container').setAttribute('data-print-date', formattedDate);
+            
+            // Print after a short delay to ensure styles are applied
+            setTimeout(function() {
+                window.print();
+            }, 200);
         });
 
         // Initial table load

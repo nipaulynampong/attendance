@@ -5,6 +5,26 @@ $username = "root";
 $password = "";
 $dbname = "hris";
 
+// Get the department from URL parameter
+$department = '';
+
+if (isset($_GET['department'])) {
+    // For text data type, we need to handle it carefully
+    $department = trim($_GET['department']);
+    // Remove any potential harmful characters but preserve the text content
+    $department = preg_replace('/[^\p{L}\p{N}\s\-_]/u', '', $department);
+    
+    // Debug logging
+    error_log("Received department parameter: " . $_GET['department']);
+    error_log("Processed department value: " . $department);
+}
+
+if (empty($department)) {
+    error_log("No department specified in update_form.php");
+    echo "<div class='alert alert-danger'><i class='fas fa-exclamation-circle'></i> No department specified.</div>";
+    exit();
+}
+
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -13,21 +33,30 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Initialize $row variable
+// Set the character set to handle text properly
+$conn->set_charset("utf8mb4");
+
+// Initialize variables
 $row = [];
 $updateSuccess = false;
 
-// Fetch all department details
-$sql = "SELECT * FROM department";
-$result = $conn->query($sql);
+// Fetch specific department details
+$sql = "SELECT * FROM department WHERE Department = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $department);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
+    error_log("Found department in database: " . $row['Department']);
 } else {
-    echo "<p>No departments found.</p>";
-    // Optionally, redirect to a page or display an error message
-    exit(); // Exit script if no departments found
+    error_log("Department not found in database: " . $department);
+    echo "<div class='alert alert-danger'><i class='fas fa-exclamation-circle'></i> Department not found.</div>";
+    exit();
 }
+
+$stmt->close();
 
 // Check if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -46,19 +75,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($stmt->execute()) {
             $updateSuccess = true;
-            // Clear the form fields after successful update
-            $row['Description'] = '';
-            $row['Head'] = '';
-            $row['Contact'] = '';
-            $row['Status'] = '';
         } else {
             echo "Error: " . $stmt->error;
         }
 
         // Close statement
         $stmt->close();
-    } else {
-        echo "<p>All fields are required.</p>";
     }
 }
 
@@ -221,10 +243,6 @@ $conn->close();
 <?php endif; ?>
 
 <form class="update-form" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
-  <div class="form-header">
-    <h2 class="form-title"><i class="fas fa-edit"></i> Update Department</h2>
-  </div>
-  
   <div class="form-group">
     <label for="department">Department Name</label>
     <input type="text" id="department" name="department" class="form-control readonly-field" value="<?php echo isset($row['Department']) ? $row['Department'] : ''; ?>" readonly>
@@ -254,7 +272,7 @@ $conn->close();
     </select>
   </div>
   
-  <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Department</button>
+  <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
 </form>
 
 <script>

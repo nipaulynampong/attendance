@@ -153,9 +153,19 @@ if(isset($_GET['restore'])) {
 
     <script>
         function restoreEmployee(employeeID) {
-            if(confirm('Are you sure you want to restore this employee?')) {
-                window.location.href = 'archive.php?restore=' + employeeID;
-            }
+            // First fetch the employee name
+            var nameXhttp = new XMLHttpRequest();
+            nameXhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var employeeName = this.responseText;
+                    // Show confirmation with employee name
+                    if(confirm('Are you sure you want to restore ' + employeeName + '?')) {
+                        window.location.href = 'archive.php?restore=' + employeeID;
+                    }
+                }
+            };
+            nameXhttp.open("GET", "get_archived_employee_name.php?id=" + employeeID, true);
+            nameXhttp.send();
         }
     </script>
 </body>

@@ -1,0 +1,32 @@
+/* 
+ * iframe-style.css
+ * Common styles for iframe content pages to prevent double scrollbars
+ */
+
+html {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: auto;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: visible;
+  min-height: 100%;
+  height: auto;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* For pages with container elements */
+.container, 
+.content-wrapper, 
+.main-content, 
+.page-content {
+  overflow: visible !important;
+  padding-bottom: 1px; /* Tiny padding to ensure all content is included */
+} 

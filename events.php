@@ -9,10 +9,11 @@ function checkEventStatus($date) {
     $stmt = $conn->prepare($query);
     $stmt->execute(['date' => $date]);
     
-    return $stmt->fetch(PDO::FETCH_ASSOC) ?: false;
+    $result = $stmt->fetch();
+    return $result ? $result : false;
 }
 
-// Handle form submissions
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_event'])) {
         try {
@@ -111,6 +112,7 @@ $events_result = $events_stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Event Management</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #4F6F52;
@@ -120,179 +122,132 @@ $events_result = $events_stmt->fetchAll(PDO::FETCH_ASSOC);
             --background-color: #f5efe6;
             --card-color: #FFFFFF;
             --text-color: #333333;
+            --border-radius-lg: 15px;
+            --border-radius-md: 10px;
+            --border-radius-sm: 6px;
         }
 
-        body {
+        body, html {
             background-color: var(--background-color);
             font-family: 'Poppins', sans-serif;
+        }
+        
+        /* Override Bootstrap font families */
+        .table, .table th, .table td,
+        .form-control, .btn, .card, .card-header, .card-body,
+        .modal, .modal-title, .modal-body, .modal-footer,
+        h1, h2, h3, h4, h5, h6, p, span, div, a, input, select, textarea {
+            font-family: 'Poppins', sans-serif !important;
+        }
+
+        .container {
+            margin: 0 auto;
+            padding: 0 20px;
+            max-height: 85vh;
+            overflow-y: scroll;
+        }
+        
+        /* Scrollbar styling for container */
+        .container::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        .container::-webkit-scrollbar-thumb:hover {
+            background: var(--dark-color);
         }
 
         .navbar {
             background-color: var(--primary-color) !important;
+            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+            margin-bottom: 20px;
         }
 
         .card {
             border: none;
-            border-radius: 10px;
+            border-radius: var(--border-radius-lg);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .card-header {
             background-color: var(--primary-color);
             color: white;
-            border-radius: 10px 10px 0 0 !important;
+            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0 !important;
         }
 
-        .btn-primary {
-            background-color: var(--primary-color);
+        .form-control {
+            border-radius: var(--border-radius-sm);
+            border: 1px solid #ced4da;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .form-control:focus {
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(79, 111, 82, 0.25);
         }
 
-        .btn-primary:hover {
-            background-color: var(--dark-color);
-            border-color: var(--dark-color);
+        .btn {
+            border-radius: var(--border-radius-sm);
+            transition: all 0.2s ease-in-out;
         }
 
-        .table th {
+        .modal-content {
+            border-radius: var(--border-radius-lg);
+            border: none;
+        }
+
+        .modal-header {
+            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
             background-color: var(--primary-color);
             color: white;
-            font-weight: 500;
-            padding: 12px;
-            border: none;
         }
 
-        .table td {
-            padding: 12px;
-            border: none;
-            border-bottom: 1px solid #f2f2f2;
+        .table {
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
         }
 
-        .table tr:hover {
-            background-color: rgba(79, 111, 82, 0.05);
+        .table th:first-child {
+            border-top-left-radius: var(--border-radius-sm);
+        }
+
+        .table th:last-child {
+            border-top-right-radius: var(--border-radius-sm);
+        }
+
+        .action-buttons .btn {
+            border-radius: var(--border-radius-sm);
+            margin: 0 2px;
+        }
+
+        select.form-control[multiple] {
+            border-radius: var(--border-radius-sm);
+        }
+
+        .alert {
+            border-radius: var(--border-radius-md);
+            border: none;
         }
 
         .badge-event {
             padding: 8px 12px;
-            border-radius: 20px;
+            border-radius: var(--border-radius-md);
             font-weight: normal;
         }
 
-        .badge-Company {
-            background-color: #A6E3A1;
-            color: #2D5E2D;
-        }
-
-        .badge-Department {
-            background-color: #ADE8F4;
-            color: #1A5F7A;
-        }
-
-        .badge-Training {
-            background-color: #FFECD6;
-            color: #996600;
-        }
-
-        .badge-Other {
-            background-color: #E9D8FD;
-            color: #6B46C1;
-        }
-
-        .required-attendance {
-            color: #FF6B6B;
-            font-weight: bold;
-        }
-
-        .table .btn {
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            margin: 0;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            padding: 0;
-        }
-
-        .table .btn i {
-            margin-right: 0;
-        }
-
-        .table .btn-info {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
-            color: white;
-        }
-
-        .table .btn-warning {
-            background-color: #FFA41B;
-            border-color: #FFA41B;
-            color: white;
-        }
-
-        .table .btn-danger {
-            background-color: #FF6B6B;
-            border-color: #FF6B6B;
-            color: white;
-        }
-
-        .table .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-        }
-
-        .table .btn-info:hover {
-            background-color: #658366;
-            border-color: #658366;
-        }
-
-        .table .btn-warning:hover {
-            background-color: #F29727;
-            border-color: #F29727;
-        }
-
-        .table .btn-danger:hover {
-            background-color: #EE5D5D;
-            border-color: #EE5D5D;
-        }
-
-        .action-buttons {
-            white-space: nowrap;
-            display: flex;
-            margin: 0;
-            padding: 0;
-        }
-
-        .action-buttons .btn,
-        .action-buttons form {
-            margin: 0;
-            padding: 0;
-        }
-
-        .action-buttons .btn {
-            border-radius: 0;
-            margin: 0;
-            height: 32px;
-            width: 32px;
-        }
-
-        .action-buttons .btn:first-child {
-            border-top-left-radius: 4px;
-            border-bottom-left-radius: 4px;
-        }
-
-        .action-buttons .btn:last-child {
-            border-top-right-radius: 4px;
-            border-bottom-right-radius: 4px;
-        }
-
-        .action-buttons form {
-            display: inline-flex;
-        }
-
-        td {
-            vertical-align: middle !important;
+        .custom-control-label::before,
+        .custom-control-label::after {
+            border-radius: var(--border-radius-sm);
         }
     </style>
 </head>
@@ -446,7 +401,7 @@ $events_result = $events_stmt->fetchAll(PDO::FETCH_ASSOC);
                                                     </button>
                                                     <form action="events.php" method="POST" class="d-inline">
                                                         <input type="hidden" name="event_id" value="<?php echo $event['id']; ?>">
-                                                        <button type="submit" name="delete_event" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this event?')">
+                                                        <button type="submit" name="delete_event" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this event: <?php echo htmlspecialchars($event['event_name']); ?>?')">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     </form>

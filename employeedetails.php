@@ -312,13 +312,18 @@ if(isset($_GET['id'])) {
         
         // Left side - Image - smaller size and margins
         echo '<div style="flex: 0 0 120px; margin-right: 15px;">';
-        // Display image if available
+        // Display image if available - using simple direct approach
+        echo '<div style="width: 100px; height: 100px; margin: 0 auto;">';
         if (!empty($row["Image"])) {
             $imageData = base64_encode($row["Image"]);
-            echo '<img src="data:image/jpeg;base64,'.$imageData.'" alt="Employee Image" class="profile-img" style="width: 100px; height: 100px; margin-bottom: 0;">';
+            echo '<img src="data:image/jpeg;base64,'.$imageData.'" alt="Employee Image" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">';
         } else {
-            echo '<img src="https://via.placeholder.com/150" alt="Placeholder Image" class="profile-img" style="width: 100px; height: 100px; margin-bottom: 0;">';
+            // Display default image if no image is available
+            echo '<div style="width: 100px; height: 100px; border-radius: 50%; background-color: #4F6F52; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">';
+            echo '<i class="fas fa-user" style="color: white; font-size: 40px;"></i>';
+            echo '</div>';
         }
+        echo '</div>';
         echo '</div>';
         
         // Right side - Employee info - reduced font sizes and margins

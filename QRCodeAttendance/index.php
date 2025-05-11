@@ -41,31 +41,35 @@
             min-height: 100vh;
         }
 
-        /* Center navbar title styles */
+        /* Navbar styles - reduced height and padding */
         .navbar {
             background-color: var(--primary-color) !important;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 8px 0 !important;
+            padding: 2px 0 !important; /* Further reduced from 4px to 2px */
             text-align: center !important;
+            min-height: 40px !important; /* Set a smaller min-height */
         }
         
         .navbar .text-center {
             text-align: center !important;
             width: 100% !important;
+            line-height: 1 !important; /* Reduce line height */
         }
         
         .navbar .navbar-brand {
             color: white !important;
             font-weight: 600 !important;
-            font-size: 28px !important;
+            font-size: 22px !important; /* Further reduced from 24px to 22px */
             display: inline-block !important;
             float: none !important;
             margin: 0 auto !important;
+            padding: 6px 15px !important; /* Custom padding */
+            height: auto !important; /* Let height be determined by content */
         }
         
         .navbar .navbar-brand i {
-            font-size: 30px !important;
-            margin-right: 10px !important;
+            font-size: 26px !important;
+            margin-right: 8px !important;
             vertical-align: middle !important;
         }
         
@@ -85,7 +89,7 @@
             background-color: var(--card-color);
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             overflow: hidden;
             border: none;
         }
@@ -93,7 +97,7 @@
         .card-header {
             background-color: var(--primary-color);
             color: white;
-            padding: 12px 15px;
+            padding: 8px 15px; /* Reduced from 12px 15px to 8px 15px */
             font-weight: 500;
             border-bottom: none;
             display: flex;
@@ -104,7 +108,7 @@
         }
         
         .card-body {
-            padding: 15px;
+            padding: 12px; /* Reduced from 15px to 12px */
             text-align: center;
         }
         
@@ -112,7 +116,8 @@
             border-radius: 8px;
             width: 100%;
             border: 1px solid #eee;
-            min-height: 380px;
+            min-height: 320px; /* Smaller to match table height */
+            max-height: 330px;
             object-fit: cover;
             margin: 0 auto;
         }
@@ -132,8 +137,8 @@
         
         .alert {
             border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 15px;
+            padding: 8px; /* Reduced from 12px */
+            margin-bottom: 10px; /* Reduced from 15px */
             border: none;
         }
         
@@ -161,12 +166,13 @@
             border-collapse: collapse !important;
             width: 100% !important;
             margin: 0 auto !important;
+            table-layout: fixed;
         }
         
         /* Define column widths for better alignment */
         table.dataTable th:nth-child(1), /* Name */
         table.dataTable td:nth-child(1) {
-            width: 20%;
+            width: 16%;
         }
         
         table.dataTable th:nth-child(2), /* ID */
@@ -176,24 +182,24 @@
         
         table.dataTable th:nth-child(3), /* Department */
         table.dataTable td:nth-child(3) {
-            width: 15%;
+            width: 10%;
         }
         
         table.dataTable th:nth-child(4), /* Time In */
         table.dataTable td:nth-child(4),
         table.dataTable th:nth-child(5), /* Time Out */
         table.dataTable td:nth-child(5) {
-            width: 15%;
+            width: 12%;
         }
         
         table.dataTable th:nth-child(6), /* Date */
         table.dataTable td:nth-child(6) {
-            width: 15%;
+            width: 12%;
         }
         
         table.dataTable th:nth-child(7), /* Status */
         table.dataTable td:nth-child(7) {
-            width: 10%;
+            width: 28%; /* Increased from 18% to 28% */
         }
         
         table.dataTable th {
@@ -206,7 +212,7 @@
         }
         
         table.dataTable td {
-            padding: 12px !important;
+            padding: 8px !important;
             border: none;
             border-bottom: 1px solid #f2f2f2;
             vertical-align: middle;
@@ -218,10 +224,13 @@
         }
         
         .badge {
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 50px;
-            font-weight: normal;
-            font-size: 12px;
+            font-weight: 500;
+            font-size: 13px;
+            display: inline-block;
+            margin: 2px 0;
+            min-width: 90px;
         }
         
         .badge-success {
@@ -268,14 +277,37 @@
         .dataTables_wrapper .dataTables_filter,
         .dataTables_wrapper .dataTables_info,
         .dataTables_wrapper .dataTables_paginate {
-            margin: 10px 0;
+            display: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .dataTables_wrapper .row:last-child {
+            display: none;
         }
         
         .container {
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
+            padding: 5px 20px 20px;
+            max-width: 1500px; /* Increased from 1300px to 1500px */
+            margin: -5px auto 0; 
             flex: 1;
+        }
+        
+        .row {
+            margin-top: 0;
+            display: flex;
+            flex-wrap: nowrap; /* Prevent wrapping to new line */
+        }
+        
+        /* Column sizing */
+        .col-md-4 {
+            width: 31%; /* Scanner column */
+            padding-right: 10px;
+        }
+        
+        .col-md-8 {
+            width: 69%; /* Table column */
+            padding-left: 10px;
         }
         
         .row-centered {
@@ -285,17 +317,19 @@
         }
         
         .current-time {
-            font-size: 14px;
+            font-size: 13px;
             background-color: rgba(79, 111, 82, 0.1);
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 8px;
-            margin-top: 10px;
+            margin-top: 8px;
             display: inline-block;
             text-align: center;
         }
         
         .status-cell {
             text-align: center;
+            padding: 4px;
+            width: 100%;
         }
 
         /* Add the modal styles */
@@ -454,6 +488,34 @@
             border-radius: 8px;
             display: none;
         }
+
+        /* Additional space optimizations */
+        .row > div {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        /* Card container modifications */
+        .col-md-7 {
+            width: 60%; /* Expand the width of the right column for the table */
+        }
+        
+        /* Status cell and badge styling improvements */
+        .status-cell {
+            text-align: center;
+            padding: 4px;
+            width: 100%;
+        }
+        
+        .badge {
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 13px;
+            display: inline-block;
+            margin: 2px 0;
+            min-width: 90px;
+        }
     </style>
 </head>
 <body>
@@ -494,6 +556,22 @@
     </div>
 </div>
 
+<!-- Error Modal -->
+<div id="errorModal" class="employee-modal">
+    <div class="employee-card">
+        <div class="employee-header" style="background-color: #e74c3c;">
+            <h3>Error</h3>
+        </div>
+        <div class="employee-content">
+            <div style="font-size: 50px; color: #e74c3c; margin-bottom: 20px;">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div id="errorMessage" style="font-size: 18px; margin-bottom: 20px; color: #333;"></div>
+            <button onclick="document.getElementById('errorModal').classList.remove('show')" class="btn btn-danger">OK</button>
+        </div>
+    </div>
+</div>
+
 <nav class="navbar">
     <div class="text-center w-100">
         <span class="navbar-brand">
@@ -505,7 +583,7 @@
 <div class="container">
     <div class="row">
         <!-- Scanner column -->
-        <div class="col-md-5">
+        <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
                     <i class="fas fa-camera"></i> Scanner
@@ -547,10 +625,10 @@
         </div>
 
         <!-- Attendance table column -->
-        <div class="col-md-7">
+        <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <i class="fas fa-list"></i> Today's Attendance
+                    <i class="fas fa-list"></i> Latest 10 Attendance Records
                 </div>
                 <div class="card-body p-2">
                     <div class="table-responsive">
@@ -574,22 +652,20 @@
                             $dbname="hris";
 
                             $conn = new mysqli($server,$username,$password,$dbname);
-                            $current_date = date('Y-m-d'); // Get the current date
+                            $current_date = date('Y-m-d'); 
                             if($conn->connect_error){
                                 die("Connection failed" .$conn->connect_error);
                             }
                             
-                            // Updated query to include department information and order by newest scan first (highest ID first)
                             $sql ="SELECT attendance.*, employee.`Last Name`, employee.`First Name`, department.Department 
                                   FROM attendance 
                                   LEFT JOIN employee ON attendance.EMPLOYEEID=employee.EmployeeID 
                                   LEFT JOIN department ON employee.Department=department.Department
-                                  WHERE attendance.LOGDATE='$current_date'
-                                  ORDER BY attendance.ID DESC";
+                                  WHERE attendance.LOGDATE = '$current_date'
+                                  ORDER BY attendance.ID DESC, attendance.LOGDATE DESC LIMIT 10";
                                   
                             $query = $conn->query($sql);
                             while ($row = $query->fetch_assoc()){
-                                // Determine status badge class
                                 $statusClass = "badge-success";
                                 if($row['STATUS'] == "Late"){
                                     $statusClass = "badge-warning";
@@ -607,28 +683,29 @@
                                     $statusClass = "badge-late-no-timeout";
                                 }
                                 
-                                // Display holiday info if available
-                                $holidayInfo = !empty($row['HolidayInfo']) ? '<div><small class="text-purple"><i class="fas fa-calendar-day"></i> ' . $row['HolidayInfo'] . '</small></div>' : '';
-
-                                $additionalInfo = '';
-                                if (!empty($row['HolidayInfo'])) {
-                                    $additionalInfo .= '<div><small class="text-purple"><i class="fas fa-calendar-day"></i> ' . htmlspecialchars($row['HolidayInfo']) . '</small></div>';
-                                }
-                                if (!empty($row['EventInfo'])) {
-                                    $additionalInfo .= '<div class="event-info"><i class="fas fa-calendar-check"></i> ' . htmlspecialchars($row['EventInfo']) . '</div>';
+                                // Handle case where employee data is missing
+                                $employeeName = 'Unknown';
+                                if (!empty($row['Last Name']) || !empty($row['First Name'])) {
+                                    $employeeName = $row['Last Name'].', '.$row['First Name'];
                                 }
                             ?>
                             <tr>
-                                <td><?php echo $row['Last Name'].', '.$row['First Name'];?></td>
-                                <td><?php echo $row['EMPLOYEEID'];?></td>
-                                <td><?php echo $row['Department'] ? $row['Department'] : 'Not assigned';?></td>
-                                <td><?php echo $row['TIMEIN'];?></td>
-                                <td><?php echo $row['TIMEOUT'];?></td>
-                                <td><?php echo date('M d, Y', strtotime($row['LOGDATE']));?></td>
-                                <td class="status-cell">
-                                    <span class="badge <?php echo $statusClass; ?>"><?php echo $row['STATUS'];?></span>
-                                    <?php echo $holidayInfo; ?>
-                                    <?php echo $additionalInfo; ?>
+                                <td><?php echo $employeeName; ?></td>
+                                <td><?php echo $row['EMPLOYEEID']; ?></td>
+                                <td><?php echo $row['Department'] ? $row['Department'] : 'Not assigned'; ?></td>
+                                <td><?php echo $row['TIMEIN']; ?></td>
+                                <td><?php echo $row['TIMEOUT']; ?></td>
+                                <td><?php echo date('M d, Y', strtotime($row['LOGDATE'])); ?></td>
+                                <td>
+                                    <div class="status-cell">
+                                        <div style="margin-bottom: 4px;"><span class="badge <?php echo $statusClass; ?>"><?php echo $row['STATUS']; ?></span></div>
+                                        <?php if (!empty($row['HolidayInfo'])): ?>
+                                            <div style="margin-bottom: 2px;"><span class="badge badge-holiday"><i class="fas fa-calendar-day"></i> <?php echo htmlspecialchars($row['HolidayInfo']); ?></span></div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($row['EventInfo'])): ?>
+                                            <div><span class="badge badge-Event"><i class="fas fa-calendar-check"></i> <?php echo htmlspecialchars($row['EventInfo']); ?></span></div>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                             </tr>
                             <?php
@@ -705,20 +782,25 @@
             "autoWidth": false,
             "ordering": false, // Disable client-side ordering to preserve server-side sort
             "language": {
-                "emptyTable": "No attendance records for today"
+                "emptyTable": "No attendance records for today",
+                "info": "", // Remove "Showing X to Y of Z entries" text
+                "infoEmpty": "", // Remove empty info text
+                "zeroRecords": "No matching records found"
             },
             "columnDefs": [
                 { "className": "status-cell", "targets": 6 }
             ],
             "searching": false, // Remove search functionality
-            "lengthChange": false // Remove entries per page option
+            "lengthChange": false, // Remove entries per page option
+            "paging": false, // Remove pagination
+            "pageLength": 5, // Limit to 5 rows (though paging is disabled, this still limits initial display)
+            "dom": 't' // Only show the table, no other controls
         });
     });
 
-    // Employee scan display functionality
     <?php if (isset($_SESSION['scan_success']) && $_SESSION['scan_success']): ?>
         document.addEventListener('DOMContentLoaded', function() {
-            // Set up the employee modal with data from session
+           
             const employeeId = "<?php echo $_SESSION['employee_id']; ?>";
             const employeeName = "<?php echo $_SESSION['employee_name']; ?>";
             const department = "<?php echo $_SESSION['department']; ?>";
@@ -730,7 +812,7 @@
             const isHoliday = <?php echo isset($_SESSION['is_holiday']) && $_SESSION['is_holiday'] ? 'true' : 'false'; ?>;
             const holidayName = "<?php echo isset($_SESSION['holiday_name']) ? $_SESSION['holiday_name'] : ''; ?>";
             
-            // Update the modal content
+           
             document.getElementById('employeeName').innerText = employeeName;
             document.getElementById('employeeId').innerText = "ID: " + employeeId;
             document.getElementById('employeeDept').innerText = department;
@@ -738,7 +820,7 @@
             document.getElementById('scanTime').innerText = scanTime;
             document.getElementById('scanDate').innerText = scanDate;
             
-            // Display holiday info if applicable
+          
             if (isHoliday) {
                 document.getElementById('holidayInfo').style.display = 'block';
                 document.getElementById('holidayName').innerText = holidayName;
@@ -746,12 +828,13 @@
                 document.getElementById('holidayInfo').style.display = 'none';
             }
             
-            // Set the status class and text
+          
             const statusElement = document.getElementById('scanStatus');
             const statusTextElement = document.getElementById('statusText');
             
             statusTextElement.innerText = status;
             
+            // Handle various status types for proper styling
             if (status === 'Holiday') {
                 statusElement.className = 'scan-status status-holiday';
             } else if (isRestDay) {
@@ -761,8 +844,10 @@
                 statusElement.className = 'scan-status status-present';
             } else if (status === 'Late') {
                 statusElement.className = 'scan-status status-late';
-            } else if (status === 'Early Out') {
+            } else if (status === 'Present - Early Out' || status === 'Late - Early Out') {
                 statusElement.className = 'scan-status status-early';
+            } else if (status === 'Present - Complete' || status === 'Late - Complete') {
+                statusElement.className = 'scan-status status-present';
             } else if (status === 'Rest Day') {
                 statusElement.className = 'scan-status status-rest-day';
             }
@@ -771,8 +856,31 @@
             const imageElement = document.getElementById('employeeImage');
             imageElement.src = 'get_employee_image.php?id=' + employeeId;
             imageElement.onerror = function() {
-                // If image loading fails, use a placeholder
-                this.src = 'https://via.placeholder.com/120';
+                // If image loading fails, replace with our default user icon
+                const parentElement = this.parentElement;
+                this.style.display = 'none';
+                
+                // Create a div with the green circle and user icon
+                const iconDiv = document.createElement('div');
+                iconDiv.style.width = '120px';
+                iconDiv.style.height = '120px';
+                iconDiv.style.borderRadius = '50%';
+                iconDiv.style.backgroundColor = '#4F6F52';
+                iconDiv.style.display = 'flex';
+                iconDiv.style.alignItems = 'center';
+                iconDiv.style.justifyContent = 'center';
+                iconDiv.style.margin = '0 auto';
+                iconDiv.style.boxShadow = '0 3px 10px rgba(0,0,0,0.2)';
+                
+                // Create the icon
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-user';
+                icon.style.color = 'white';
+                icon.style.fontSize = '50px';
+                
+                // Append icon to div and div to parent
+                iconDiv.appendChild(icon);
+                parentElement.insertBefore(iconDiv, this);
             };
             
             // Show the modal
@@ -800,6 +908,98 @@
             }, 5000);
         });
     <?php endif; ?>
+
+    // Check for department not found error and show modal
+    <?php if (isset($_SESSION['error_type']) && in_array($_SESSION['error_type'], ['department_not_found', 'employee_not_found', 'already_timed_out'])): ?>
+    // Store the error message in a JavaScript variable
+    const errorMsg = "<?php echo addslashes($_SESSION['error_message']); ?>";
+    
+    // Use window.onload to ensure the DOM is fully loaded
+    window.onload = function() {
+        // Access the modal elements
+        const errorModal = document.getElementById('errorModal');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorHeader = document.querySelector('#errorModal .employee-header h3');
+        const errorIcon = document.querySelector('#errorModal .employee-content > div > i');
+        
+        // Set message and styling based on error type
+        errorMessage.innerText = errorMsg;
+        
+        if ("<?php echo $_SESSION['error_type']; ?>" === "employee_not_found") {
+            errorHeader.innerText = "Employee Not Found";
+            errorIcon.className = "fas fa-user-slash";
+            errorHeader.parentElement.style.backgroundColor = "#e74c3c"; // Red
+        } else if ("<?php echo $_SESSION['error_type']; ?>" === "already_timed_out") {
+            errorHeader.innerText = "Time Out Notice";
+            errorIcon.className = "fas fa-clock";
+            errorHeader.parentElement.style.backgroundColor = "#3498db"; // Blue
+        } else {
+            errorHeader.innerText = "Department Error";
+            errorIcon.className = "fas fa-exclamation-circle";
+            errorHeader.parentElement.style.backgroundColor = "#e74c3c"; // Red
+        }
+        
+        // Show the modal
+        errorModal.classList.add('show');
+        
+        // Auto-close after 5 seconds
+        setTimeout(function() {
+            errorModal.classList.remove('show');
+        }, 5000);
+    };
+    
+    <?php
+    // Clear the session variables
+    unset($_SESSION['error_type']);
+    unset($_SESSION['error_message']);
+    ?>
+    <?php endif; ?>
 </script>
+
+<!-- Dedicated script for error modal -->
+<?php if (isset($_SESSION['error_type']) && in_array($_SESSION['error_type'], ['department_not_found', 'employee_not_found', 'already_timed_out'])): ?>
+<script>
+    // Execute immediately
+    (function() {
+        console.log("Showing error modal");
+        
+        // Set modal elements
+        const errorModal = document.getElementById('errorModal');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorHeader = document.querySelector('#errorModal .employee-header h3');
+        const errorIcon = document.querySelector('#errorModal .employee-content > div > i');
+        
+        // Set message and icon based on error type
+        errorMessage.innerText = "<?php echo addslashes($_SESSION['error_message']); ?>";
+        
+        <?php if ($_SESSION['error_type'] === 'employee_not_found'): ?>
+        errorHeader.innerText = "Employee Not Found";
+        errorIcon.className = "fas fa-user-slash";
+        errorHeader.parentElement.style.backgroundColor = "#e74c3c"; // Red
+        <?php elseif ($_SESSION['error_type'] === 'already_timed_out'): ?>
+        errorHeader.innerText = "Time Out Notice";
+        errorIcon.className = "fas fa-clock";
+        errorHeader.parentElement.style.backgroundColor = "#3498db"; // Blue
+        <?php else: ?>
+        errorHeader.innerText = "Department Error";
+        errorIcon.className = "fas fa-exclamation-circle";
+        errorHeader.parentElement.style.backgroundColor = "#e74c3c"; // Red
+        <?php endif; ?>
+        
+        // Show the modal
+        errorModal.classList.add('show');
+        
+        // Auto-close after 5 seconds
+        setTimeout(function() {
+            errorModal.classList.remove('show');
+        }, 5000);
+    })();
+</script>
+<?php 
+// Clear session variables
+unset($_SESSION['error_type']);
+unset($_SESSION['error_message']);
+endif; 
+?>
 </body>
 </html>

@@ -23,7 +23,12 @@ if (!$data || !isset($data['qr_data'])) {
 
 // Process the QR code data
 $qrData = $data['qr_data'];
+$qrCodeURL = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($qrData);
 
-// Success response should match what the JavaScript expects
-echo json_encode(array("success" => true, "status" => "success", "qr_data" => $qrData));
+// Return the QR code URL
+echo json_encode(array(
+    "success" => true,
+    "status" => "success",
+    "qr_url" => $qrCodeURL
+));
 ?>

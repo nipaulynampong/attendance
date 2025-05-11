@@ -99,8 +99,14 @@
                     // Check if the data is a valid image
                     $imageData = base64_encode($qrCodeData);
                     if ($imageData !== false) {
-                        // Display the QR code image
-                        echo '<div class="paper qr-container"><img src="data:image/png;base64,' . $imageData . '" alt="QR Code"></div>';
+                        // Get the employee ID as the decoded value
+                        $decodedValue = $employeeID;
+                        
+                        // Display the QR code image with the decoded value underneath
+                        echo '<div class="paper qr-container">';
+                        echo '<img src="data:image/png;base64,' . $imageData . '" alt="QR Code">';
+                        echo '<div style="margin-top: 15px; font-size: 18px; font-weight: bold;">Employee ID: ' . $decodedValue . '</div>';
+                        echo '</div>';
                     } else {
                         echo "Error: Failed to decode QR code image data.";
                     }

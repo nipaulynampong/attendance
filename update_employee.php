@@ -16,6 +16,50 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $contactNumber = isset($_POST['contactNumber']) ? $_POST['contactNumber'] : '';
         $department = isset($_POST['department']) ? $_POST['department'] : '';
         
+        // Validate name fields (only allow letters, dashes, and spaces)
+        $namePattern = '/^[a-zA-Z\- ]+$/';
+        
+        if (!empty($lastName) && !preg_match($namePattern, $lastName)) {
+            throw new Exception("Last Name can only contain letters, dashes, and spaces.");
+        }
+        
+        if (!empty($firstName) && !preg_match($namePattern, $firstName)) {
+            throw new Exception("First Name can only contain letters, dashes, and spaces.");
+        }
+        
+        // Special pattern for middle name to allow forward slash for N/A
+        $middleNamePattern = '/^[a-zA-Z\-\/ ]+$/';
+        if (!empty($middleName) && !preg_match($middleNamePattern, $middleName)) {
+            throw new Exception("Middle Name can only contain letters, dashes, spaces, and forward slash (/) for N/A.");
+        }
+        
+        // Validate age (limit to 3 digits)
+        if (!empty($age)) {
+            // Check if age is numeric and has at most 3 digits
+            if (!is_numeric($age) || strlen($age) > 3) {
+                throw new Exception("Age must be a number with at most 3 digits.");
+            }
+            
+            // Check if age is within reasonable range (1-999)
+            if ($age < 1 || $age > 999) {
+                throw new Exception("Age must be between 1 and 999.");
+            }
+        }
+        
+        // Validate contact number (must be 11 digits and start with 09)
+        if (!empty($contactNumber)) {
+            // Remove any non-digit characters first
+            $contactNumber = preg_replace('/[^0-9]/', '', $contactNumber);
+            
+            // Check if contact number is exactly 11 digits and starts with 09
+            if (!preg_match('/^09\d{9}$/', $contactNumber)) {
+                throw new Exception("Contact Number must be 11 digits and start with 09.");
+            }
+            
+            // Store the full contact number as a string (for VARCHAR field)
+            $_POST['contactNumber'] = $contactNumber;
+        }
+        
         // Validate that employee ID is not null
         if ($employeeID === null) {
             throw new Exception("Employee ID is missing");
@@ -44,7 +88,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             throw new Exception("Connection failed: " . $conn->connect_error);
         }
 
-        // Prepare SQL statement to update employee details including rest days
+        // Check if a new image was uploaded
+        $imageSQL = "";
+        if(isset($_FILES['employeeImage']) && $_FILES['employeeImage']['size'] > 0) {
+            // Get file information
+            $fileTmpPath = $_FILES['employeeImage']['tmp_name'];
+            $fileName = $_FILES['employeeImage']['name'];
+            $fileSize = $_FILES['employeeImage']['size'];
+            $fileType = $_FILES['employeeImage']['type'];
+            $fileNameCmps = explode(".", $fileName);
+            $fileExtension = strtolower(end($fileNameCmps));
+            
+            // Allowed file extensions
+            $allowedExtensions = array('jpg', 'jpeg', 'png');
+            
+            // Validate file type
+            if(!in_array($fileExtension, $allowedExtensions)) {
+                throw new Exception("Invalid file type. Only JPG, JPEG, and PNG files are allowed.");
+            }
+            
+            // Validate file size (max 2MB)
+            if($fileSize > 2 * 1024 * 1024) {
+                throw new Exception("File size exceeds the maximum limit of 2MB.");
+            }
+            
+            // Read file data directly without processing
+            // This matches how images are handled in addemployees.php
+            $imageData = file_get_contents($fileTmpPath);
+            
+            // Prepare image data for SQL
+            $imageSQL = ", `Image`='" . $conn->real_escape_string($imageData) . "'";
+        }
+        
+        // Prepare SQL statement to update employee details including rest days and image if uploaded
         $sql = "UPDATE employee SET 
                 `Last Name`='" . $conn->real_escape_string($lastName) . "', 
                 `First Name`='" . $conn->real_escape_string($firstName) . "', 
@@ -63,7 +139,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 `Thursday_Rest`=$thursdayRest,
                 `Friday_Rest`=$fridayRest,
                 `Saturday_Rest`=$saturdayRest,
-                `Sunday_Rest`=$sundayRest
+                `Sunday_Rest`=$sundayRest" . $imageSQL . "
                 WHERE `EmployeeID`='" . $conn->real_escape_string($employeeID) . "'";
 
         // Execute SQL statement and check for errors
@@ -83,8 +159,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $error = "Error updating record: " . $conn->error;
             throw new Exception($error);
         }
-
-        $conn->close();
         
     } catch (Exception $e) {
         echo '<div style="background-color: #ffebee; color: #c62828; padding: 15px; margin-bottom: 20px; border-radius: 5px;">';
@@ -284,12 +358,32 @@ if(isset($_GET['id'])) {
         <!-- Form for updating employee details -->
         <form method="post" enctype="multipart/form-data" id="updateForm">
             <input type="hidden" name="employeeID" value="<?php echo $row['EmployeeID']; ?>">
+            
+            <!-- Employee Image Display and Upload -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <?php if (!empty($row['Image']) && $row['Image'] != null): ?>
+                    <img src="data:image/jpeg;base64,<?php echo base64_encode($row['Image']); ?>" alt="Employee Image" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #4F6F52; margin-bottom: 10px;">
+                <?php else: ?>
+                    <div style="width: 120px; height: 120px; border-radius: 50%; background-color: #4F6F52; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                        <i class="fas fa-user" style="color: white; font-size: 3rem;"></i>
+                    </div>
+                <?php endif; ?>
+                
+                <div style="margin-top: 10px;">
+                    <label for="employeeImage" style="display: inline-block; background-color: #4F6F52; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-camera"></i> Change Photo
+                    </label>
+                    <input type="file" id="employeeImage" name="employeeImage" style="display: none;" accept="image/jpeg, image/jpg, image/png">
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">Allowed formats: JPG, JPEG, PNG (Max: 2MB)</p>
+                    <div id="selectedFileName" style="font-size: 13px; margin-top: 5px;"></div>
+                </div>
+            </div>
             <label for="lastName">Last Name:</label>
-            <input type="text" id="lastName" name="lastName" value="<?php echo $row['Last Name']; ?>"><br>
+            <input type="text" id="lastName" name="lastName" value="<?php echo $row['Last Name']; ?>" pattern="[A-Za-z\- ]+" title="Only letters, dashes, and spaces are allowed" required><br>
             <label for="firstName">First Name:</label>
-            <input type="text" id="firstName" name="firstName" value="<?php echo $row['First Name']; ?>"><br>
+            <input type="text" id="firstName" name="firstName" value="<?php echo $row['First Name']; ?>" pattern="[A-Za-z\- ]+" title="Only letters, dashes, and spaces are allowed" required><br>
             <label for="middleName">Middle Name:</label>
-            <input type="text" id="middleName" name="middleName" value="<?php echo $row['Middle Name']; ?>"><br>
+            <input type="text" id="middleName" name="middleName" value="<?php echo $row['Middle Name']; ?>" pattern="[A-Za-z\-/ ]+" title="Only letters, dashes, spaces, and forward slash (/) for N/A are allowed"><br>
             <label for="suffix">Suffix:</label>
             <select id="suffix" name="suffix">
                 <option value="Jr." <?php if($row['Suffix'] == 'Jr.') echo 'selected'; ?>>Jr.</option>
@@ -304,7 +398,7 @@ if(isset($_GET['id'])) {
                 <option value="Female" <?php if($row['Gender'] == 'Female') echo 'selected'; ?>>Female</option>
             </select><br>
             <label for="age">Age:</label>
-            <input type="number" id="age" name="age" value="<?php echo $row['Age']; ?>"><br>
+            <input type="number" id="age" name="age" value="<?php echo $row['Age']; ?>" min="1" max="999" maxlength="3" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" title="Age must be between 1 and 999"><br>
             <label for="birthday">Birthday:</label>
             <input type="date" id="birthday" name="birthday" value="<?php echo $row['Birthday']; ?>"><br>
             <label for="emailAddress">Email Address:</label>
@@ -312,7 +406,7 @@ if(isset($_GET['id'])) {
             <label for="address">Address:</label>
             <input type="text" id="address" name="address" value="<?php echo $row['Address']; ?>"><br>
             <label for="contactNumber">Contact Number:</label>
-            <input type="tel" id="contactNumber" name="contactNumber" value="<?php echo $row['Contact Number']; ?>"><br>
+            <input type="tel" id="contactNumber" name="contactNumber" value="<?php echo $row['Contact Number']; ?>" pattern="09[0-9]{9}" maxlength="11" title="Contact Number must be 11 digits and start with 09"><br>
             <label for="department">Department:</label>
             <select id="department" name="department">
                 <?php
@@ -400,8 +494,99 @@ if(isset($_GET['id'])) {
         </form>
     </div>
     <script>
-        // Rest days checkbox functionality
+        // File upload functionality
         document.addEventListener('DOMContentLoaded', function() {
+            // Add validation for name fields (only letters, dashes, and spaces)
+            const nameFields = ['lastName', 'firstName', 'middleName'];
+            // Different patterns for different name fields
+            const lastNamePattern = /^[A-Za-z\- ]*$/;
+            const firstNamePattern = /^[A-Za-z\- ]*$/;
+            const middleNamePattern = /^[A-Za-z\-/ ]*$/;
+            
+            // Add validation for contact number (11 digits starting with 09)
+            const contactNumberInput = document.getElementById('contactNumber');
+            contactNumberInput.addEventListener('input', function(e) {
+                const value = e.target.value;
+                
+                // Remove any non-digit characters
+                let digitsOnly = value.replace(/\D/g, '');
+                
+                // Ensure it starts with 09
+                if (digitsOnly.length >= 2 && digitsOnly.substring(0, 2) !== '09') {
+                    digitsOnly = '09' + digitsOnly.substring(2);
+                }
+                
+                // Limit to 11 digits
+                if (digitsOnly.length > 11) {
+                    digitsOnly = digitsOnly.substring(0, 11);
+                }
+                
+                // Update the input value if it's different
+                if (value !== digitsOnly) {
+                    e.target.value = digitsOnly;
+                }
+            });
+            
+            nameFields.forEach(field => {
+                const input = document.getElementById(field);
+                
+                // Add input event listener for real-time validation
+                input.addEventListener('input', function(e) {
+                    const value = e.target.value;
+                    
+                    // Select the appropriate pattern based on the field
+                    let pattern;
+                    if (field === 'lastName') {
+                        pattern = lastNamePattern;
+                    } else if (field === 'firstName') {
+                        pattern = firstNamePattern;
+                    } else { // middleName
+                        pattern = middleNamePattern;
+                    }
+                    
+                    // If the input doesn't match our pattern
+                    if (!pattern.test(value)) {
+                        // Find the invalid character (the last character entered)
+                        const invalidChar = value.charAt(value.length - 1);
+                        
+                        // Remove the invalid character
+                        e.target.value = value.substring(0, value.length - 1);
+                        
+                        // Show a brief error message
+                        const fieldName = field === 'lastName' ? 'Last Name' : 
+                                         field === 'firstName' ? 'First Name' : 'Middle Name';
+                        
+                        if (field === 'middleName') {
+                            alert(`Invalid character '${invalidChar}' in ${fieldName}. Only letters, dashes, spaces, and forward slash (/) for N/A are allowed.`);
+                        } else {
+                            alert(`Invalid character '${invalidChar}' in ${fieldName}. Only letters, dashes, and spaces are allowed.`);
+                        }
+                    }
+                });
+            });
+            
+            // Handle file selection
+            const fileInput = document.getElementById('employeeImage');
+            const fileNameDisplay = document.getElementById('selectedFileName');
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const fileName = this.files[0].name;
+                    const fileSize = (this.files[0].size / 1024 / 1024).toFixed(2); // Convert to MB
+                    
+                    // Display file name and size
+                    fileNameDisplay.innerHTML = `<span style="color: #4F6F52;"><i class="fas fa-check-circle"></i> ${fileName} (${fileSize} MB)</span>`;
+                    
+                    // Check file size
+                    if (this.files[0].size > 2 * 1024 * 1024) {
+                        fileNameDisplay.innerHTML += `<br><span style="color: #dc3545;"><i class="fas fa-exclamation-circle"></i> File exceeds 2MB limit!</span>`;
+                    }
+                } else {
+                    fileNameDisplay.textContent = '';
+                }
+            });
+            
+            // Rest days checkbox functionality
             const checkboxes = document.querySelectorAll('.day-checkbox input[type="checkbox"]');
             const dayLabels = document.querySelectorAll('.day-checkbox');
             const restDaysText = document.getElementById('restDaysText');
