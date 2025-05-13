@@ -337,6 +337,25 @@
         margin: 2px;
         white-space: nowrap;
       }
+      
+      /* Action buttons in table - new style matching the image */
+      .action-btn {
+        background-color: #4F6F52;
+        color: white;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        margin: 2px;
+        white-space: nowrap;
+      }
 
       .action-btn:hover {
         background-color: #3D5941;
@@ -344,8 +363,10 @@
       }
 
       .action-btn i {
-        font-size: 0.8rem;
+        font-size: 0.9rem;
       }
+      
+
 
       /* Employee image */
       .employee-img {
@@ -438,6 +459,7 @@
       <div class="entries-container">
         <label for="entries">Show entries:</label>
         <select id="entries" onchange="changeEntries(this.value)">
+          <option value="all">All</option>
           <option value="5">5</option>
           <option value="10">10</option>
           <option value="15">15</option>
@@ -520,8 +542,16 @@
               // Check if image exists and is not empty
               echo "<td style='text-align:center;'>";
               if (!empty($row['Image']) && $row['Image'] != null) {
-                  // Simple direct image display approach
-                  echo "<img src='data:image/jpeg;base64," . base64_encode($row['Image']) . "' alt='Employee Image' style='width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #4F6F52;'>";
+                  $imagePath = $row['Image'];
+                  
+                  // Check if the file exists
+                  if (file_exists($imagePath)) {
+                      // Display the image from the file path
+                      echo "<img src='" . $imagePath . "' alt='Employee Image' style='width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #4F6F52;'>";
+                  } else {
+                      // Display default image if file doesn't exist
+                      echo "<div style='width:50px; height:50px; border-radius:50%; background-color:#4F6F52; display:flex; align-items:center; justify-content:center; margin:0 auto;'><i class='fas fa-user' style='color:white; font-size:20px;'></i></div>";
+                  }
               } else {
                   // Display default image if no image is available
                   echo "<div style='width:50px; height:50px; border-radius:50%; background-color:#4F6F52; display:flex; align-items:center; justify-content:center; margin:0 auto;'><i class='fas fa-user' style='color:white; font-size:20px;'></i></div>";
@@ -538,7 +568,7 @@
               echo "<button class='action-btn' onclick='showDetails(" . $row["EmployeeID"] . ")'><i class='fas fa-eye'></i> View</button>";
               echo "</td>";
               echo "<td>";
-              echo "<div style='display:flex; flex-direction:column; gap:5px;'>";
+              echo "<div style='display:flex; flex-direction:column; gap:4px;'>";
               echo "<button class='action-btn' onclick='updateEmployee(" . $row["EmployeeID"] . ")'><i class='fas fa-edit'></i> Update</button>";
               echo "<button class='action-btn' onclick='archiveEmployee(" . $row["EmployeeID"] . ")'><i class='fas fa-archive'></i> Archive</button>";
               echo "</div>";
@@ -655,22 +685,32 @@
   function changeEntries(value) {
     var tableRows = document.querySelectorAll('#employeeTable tbody tr');
     var numRows = tableRows.length;
-    var numToShow = parseInt(value);
-
+    
     // First hide all rows
     for (var i = 0; i < numRows; i++) {
       tableRows[i].style.display = 'none';
     }
     
-    // Then show only the number selected
-    for (var i = 0; i < Math.min(numToShow, numRows); i++) {
-      tableRows[i].style.display = '';
+    // Check if 'All' is selected
+    if (value === 'all') {
+      // Show all rows
+      for (var i = 0; i < numRows; i++) {
+        tableRows[i].style.display = '';
+      }
+      // Update counter to show all entries
+      document.getElementById('shown-entries').textContent = 'Showing ' + numRows + ' of ' + numRows + ' entries';
+    } else {
+      // Show only the number selected
+      var numToShow = parseInt(value);
+      for (var i = 0; i < Math.min(numToShow, numRows); i++) {
+        tableRows[i].style.display = '';
+      }
+      
+      // Update counter
+      var shownEntries = Math.min(numToShow, numRows);
+      var totalEntries = numRows;
+      document.getElementById('shown-entries').textContent = 'Showing ' + shownEntries + ' of ' + totalEntries + ' entries';
     }
-    
-    // Update a counter to show how many entries are displayed
-    var shownEntries = Math.min(numToShow, numRows);
-    var totalEntries = numRows;
-    document.getElementById('shown-entries').textContent = 'Showing ' + shownEntries + ' of ' + totalEntries + ' entries';
   }
 
  // Function to display QR code within overlay

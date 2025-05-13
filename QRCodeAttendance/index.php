@@ -628,7 +628,7 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <i class="fas fa-list"></i> Latest 10 Attendance Records
+                    <i class="fas fa-list"></i> Latest 7 Attendance Records
                 </div>
                 <div class="card-body p-2">
                     <div class="table-responsive">
@@ -661,8 +661,7 @@
                                   FROM attendance 
                                   LEFT JOIN employee ON attendance.EMPLOYEEID=employee.EmployeeID 
                                   LEFT JOIN department ON employee.Department=department.Department
-                                  WHERE attendance.LOGDATE = '$current_date'
-                                  ORDER BY attendance.ID DESC, attendance.LOGDATE DESC LIMIT 10";
+                                  ORDER BY attendance.LOGDATE DESC, attendance.TIMEIN DESC, attendance.ID DESC LIMIT 7";
                                   
                             $query = $conn->query($sql);
                             while ($row = $query->fetch_assoc()){

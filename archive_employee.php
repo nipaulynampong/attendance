@@ -198,7 +198,23 @@ if(isset($_GET['restore']) && !empty($_GET['restore'])) {
                 if ($result->num_rows > 0) {
                     while($row = $result->fetch_assoc()) {
                         echo "<tr>";
-                        echo "<td><img src='data:image/jpeg;base64," . base64_encode($row['Image']) . "' alt='Employee Image' class='employee-img'></td>";
+                        echo "<td>";
+                        if (!empty($row['Image']) && $row['Image'] != null) {
+                            $imagePath = $row['Image'];
+                            
+                            // Check if the file exists
+                            if (file_exists($imagePath)) {
+                                // Display the image from the file path
+                                echo "<img src='" . $imagePath . "' alt='Employee Image' class='employee-img'>";
+                            } else {
+                                // Display default image if file doesn't exist
+                                echo "<div style='width:50px; height:50px; border-radius:50%; background-color:#4F6F52; display:flex; align-items:center; justify-content:center; margin:0 auto;'><i class='fas fa-user' style='color:white; font-size:20px;'></i></div>";
+                            }
+                        } else {
+                            // Display default image if no image is available
+                            echo "<div style='width:50px; height:50px; border-radius:50%; background-color:#4F6F52; display:flex; align-items:center; justify-content:center; margin:0 auto;'><i class='fas fa-user' style='color:white; font-size:20px;'></i></div>";
+                        }
+                        echo "</td>";
                         echo "<td>" . $row['EmployeeID'] . "</td>";
                         echo "<td>" . $row['Last Name'] . "</td>";
                         echo "<td>" . $row['First Name'] . "</td>";

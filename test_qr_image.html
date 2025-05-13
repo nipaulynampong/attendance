@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code Attendance Image Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-container { margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        img { max-width: 200px; border: 1px solid #ccc; }
+        h1, h2 { color: #333; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>QR Code Attendance Image Test</h1>
+    
+    <div class="test-container">
+        <h2>Test 1: Direct Image Access</h2>
+        <p>This tests if the image file can be accessed directly:</p>
+        <img src="employee_images/2_1747152329.jpg" alt="Employee 2 (Direct)" onerror="this.parentNode.innerHTML += '<p class=\'error\'>Error: Image not found</p>';">
+        <p><strong>Path:</strong> employee_images/2_1747152329.jpg</p>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test 2: QRCodeAttendance Image Script (Employee ID: 2)</h2>
+        <p>This tests if the get_employee_image.php script works correctly:</p>
+        <img src="QRCodeAttendance/get_employee_image.php?id=2" alt="Employee 2 (Script)" onerror="this.parentNode.innerHTML += '<p class=\'error\'>Error: Script failed to return valid image</p>';">
+        <p><strong>Path:</strong> QRCodeAttendance/get_employee_image.php?id=2</p>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test 3: Non-existent Employee (ID: 999)</h2>
+        <p>This tests how the script handles non-existent employees:</p>
+        <img src="QRCodeAttendance/get_employee_image.php?id=999" alt="Non-existent Employee" onerror="this.parentNode.innerHTML += '<p class=\'error\'>Error: Script failed to return valid image</p>';">
+        <p><strong>Path:</strong> QRCodeAttendance/get_employee_image.php?id=999</p>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test 4: Employee Images in Directory</h2>
+        <p>This lists all images in the employee_images directory:</p>
+        <div id="image-list">Loading...</div>
+    </div>
+    
+    <script>
+        // Fetch the list of images from a PHP script
+        fetch('list_employee_images.php')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('image-list').innerHTML = data;
+            })
+            .catch(error => {
+                document.getElementById('image-list').innerHTML = 
+                    '<p class="error">Error loading image list: ' + error + '</p>' +
+                    '<p>Note: You need to create list_employee_images.php first</p>';
+            });
+    </script>
+</body>
+</html>

@@ -344,12 +344,23 @@ if ($result->num_rows > 0) {
         echo "<tr>";
         echo "<td>" . $row["EmployeeID"] . "</td>";
         // Check if image exists and is not empty
-        if (!empty($row["Image"])) {
-            echo "<td><img src='data:image/jpeg;base64," . base64_encode($row["Image"]) . "' alt='Employee Image' style='width: 50px; height: 50px; border-radius: 50%; object-fit: cover;'></td>";
+        echo "<td>";
+        if (!empty($row['Image']) && $row['Image'] != null) {
+            $imagePath = $row['Image'];
+            
+            // Check if the file exists
+            if (file_exists($imagePath)) {
+                // Display the image from the file path
+                echo "<img src='" . $imagePath . "' alt='Employee Image' style='width: 50px; height: 50px; border-radius: 50%; object-fit: cover;'>";
+            } else {
+                // Display default image if file doesn't exist
+                echo "<div style='width: 50px; height: 50px; border-radius: 50%; background-color: #4F6F52; display: flex; align-items: center; justify-content: center;'><i class='fas fa-user' style='color: white; font-size: 20px;'></i></div>";
+            }
         } else {
             // Display default image if no image is available
-            echo "<td><div style='width: 50px; height: 50px; border-radius: 50%; background-color: #4F6F52; display: flex; align-items: center; justify-content: center;'><i class='fas fa-user' style='color: white; font-size: 20px;'></i></div></td>";
+            echo "<div style='width: 50px; height: 50px; border-radius: 50%; background-color: #4F6F52; display: flex; align-items: center; justify-content: center;'><i class='fas fa-user' style='color: white; font-size: 20px;'></i></div>";
         }
+        echo "</td>";
         echo "<td>" . $row["Last Name"] . " " . $row["First Name"] . " " . $row["Middle Name"] . " " . $row["Suffix"] . "</td>";
         echo "<td>" . $row["Age"] . "</td>";
         echo "<td>" . $row["Birthday"] . "</td>";

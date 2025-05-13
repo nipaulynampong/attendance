@@ -142,9 +142,8 @@
             <tbody>
                 <?php
               
-                // Modified query to handle image data more carefully
-                $sql = "SELECT EmployeeID, `Last Name`, `First Name`, Department, 
-                       CASE WHEN Image IS NULL OR LENGTH(Image) < 100 THEN 0 ELSE 1 END AS has_valid_image 
+                // Query to get employee data
+                $sql = "SELECT EmployeeID, `Last Name`, `First Name`, Department, Image 
                        FROM employee ORDER BY Department, `Last Name`, `First Name`";
                 $result = $conn->query($sql);
 
@@ -152,15 +151,22 @@
                     while ($row = $result->fetch_assoc()) {
                         echo "<tr>";
                         
-                        // Check if image exists using our database-level check
-                        if ($row['has_valid_image'] == 1) {
-                            // Get the image directly with a separate query
-                            $img_sql = "SELECT Image FROM employee WHERE EmployeeID = " . $row['EmployeeID'];
-                            $img_result = $conn->query($img_sql);
-                            $img_row = $img_result->fetch_assoc();
+                        // Check if image exists and is not empty
+                        if (!empty($row['Image']) && $row['Image'] != null) {
+                            $imagePath = $row['Image'];
                             
-                            // Display the image
-                            echo "<td><img src='data:image/jpeg;base64," . base64_encode($img_row['Image']) . "' alt='Employee Image' style='width:50px;height:50px;border-radius:50%;object-fit:cover;'></td>";
+                            // Check if the file exists
+                            if (file_exists($imagePath)) {
+                                // Display the image from the file path
+                                echo "<td><img src='" . $imagePath . "' alt='Employee Image' style='width:50px;height:50px;border-radius:50%;object-fit:cover;'></td>";
+                            } else {
+                                // Display default image if file doesn't exist
+                                echo "<td>
+                                    <div style='width:50px;height:50px;border-radius:50%;background-color:#4F6F52;display:flex;align-items:center;justify-content:center;'>
+                                        <i class='fas fa-user' style='color:white;font-size:28px;'></i>
+                                    </div>
+                                </td>";
+                            }
                         } else {
                             // Display default image with Font Awesome icon
                             echo "<td>

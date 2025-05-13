@@ -491,8 +491,19 @@
             
                 echo '<div class="employee-info">';
                 // Check if image exists and is not empty
-                if (!empty($employee_image)) {
-                    echo '<img src="data:image/jpeg;base64,' . base64_encode($employee_image) . '" alt="Employee Image">';
+                if (!empty($employee_image) && $employee_image != null) {
+                    $imagePath = $employee_image;
+                    
+                    // Check if the file exists
+                    if (file_exists($imagePath)) {
+                        // Display the image from the file path
+                        echo '<img src="' . $imagePath . '" alt="Employee Image">';
+                    } else {
+                        // Display default image if file doesn't exist
+                        echo '<div style="width:100px; height:100px; border-radius:50%; background-color:#4F6F52; display:flex; align-items:center; justify-content:center; margin:0 auto;">';
+                        echo '<i class="fas fa-user" style="color:white; font-size:40px;"></i>';
+                        echo '</div>';
+                    }
                 } else {
                     // Display default image if no image is available
                     echo '<div style="width:100px; height:100px; border-radius:50%; background-color:#4F6F52; display:flex; align-items:center; justify-content:center; margin:0 auto;">';

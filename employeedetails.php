@@ -315,8 +315,18 @@ if(isset($_GET['id'])) {
         // Display image if available - using simple direct approach
         echo '<div style="width: 100px; height: 100px; margin: 0 auto;">';
         if (!empty($row["Image"])) {
-            $imageData = base64_encode($row["Image"]);
-            echo '<img src="data:image/jpeg;base64,'.$imageData.'" alt="Employee Image" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">';
+            $imagePath = $row["Image"];
+            
+            // Check if the file exists
+            if (file_exists($imagePath)) {
+                // Display the image from the file path
+                echo '<img src="'.$imagePath.'" alt="Employee Image" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">';
+            } else {
+                // Display default image if file doesn't exist
+                echo '<div style="width: 100px; height: 100px; border-radius: 50%; background-color: #4F6F52; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">';
+                echo '<i class="fas fa-user" style="font-size: 40px; color: white;"></i>';
+                echo '</div>';
+            }
         } else {
             // Display default image if no image is available
             echo '<div style="width: 100px; height: 100px; border-radius: 50%; background-color: #4F6F52; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">';

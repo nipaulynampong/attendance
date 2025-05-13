@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .image-container { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        img { max-width: 300px; border: 1px solid #333; }
+    </style>
+</head>
+<body>
+    <h1>Image Display Test</h1>
+    
+    <div class="image-container">
+        <h2>QRCodeAttendance Image (Employee ID: 2)</h2>
+        <img src="QRCodeAttendance/get_employee_image.php?id=2" alt="Employee Image">
+        <p>This image is loaded from QRCodeAttendance/get_employee_image.php?id=2</p>
+    </div>
+    
+    <div class="image-container">
+        <h2>Direct Image Path</h2>
+        <img src="employee_images/2_1747152329.jpg" alt="Direct Employee Image">
+        <p>This image is loaded directly from employee_images/2_1747152329.jpg</p>
+    </div>
+</body>
+</html>

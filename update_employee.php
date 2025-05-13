@@ -112,12 +112,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 throw new Exception("File size exceeds the maximum limit of 2MB.");
             }
             
-            // Read file data directly without processing
-            // This matches how images are handled in addemployees.php
-            $imageData = file_get_contents($fileTmpPath);
+            // Create employee images directory if it doesn't exist
+            $uploadDir = 'employee_images/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
             
-            // Prepare image data for SQL
-            $imageSQL = ", `Image`='" . $conn->real_escape_string($imageData) . "'";
+            // Generate a unique filename to prevent overwriting
+            $newFileName = $employeeID . '_' . time() . '.' . $fileExtension;
+            $uploadPath = $uploadDir . $newFileName;
+            
+            // Move the uploaded file to our directory
+            if (move_uploaded_file($fileTmpPath, $uploadPath)) {
+                // Store the file path in the database instead of binary data
+                $imageFilePath = $uploadPath;
+                // Prepare image path for SQL
+                $imageSQL = ", `Image`='" . $conn->real_escape_string($imageFilePath) . "'";
+            } else {
+                throw new Exception("Error uploading file.");
+            }
         }
         
         // Prepare SQL statement to update employee details including rest days and image if uploaded
@@ -351,18 +364,53 @@ if(isset($_GET['id'])) {
             margin-top: 5px;
             font-size: 14px;
         }
+        
+        /* Styles for duplicate Employee ID warning */
+        #employeeIDFeedback {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            font-weight: 500;
+            display: none;
+            background-color: #ffe6e6;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border-left: 4px solid #dc3545;
+        }
+        
+        /* Shake animation for duplicate Employee ID */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake-animation {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
     </style>
 </head>
 <body>
     <div class="update-form-container">
         <!-- Form for updating employee details -->
         <form method="post" enctype="multipart/form-data" id="updateForm">
-            <input type="hidden" name="employeeID" value="<?php echo $row['EmployeeID']; ?>">
+            <!-- Store the original Employee ID as a hidden field -->
+            <input type="hidden" id="currentID" name="currentID" value="<?php echo $row['EmployeeID']; ?>">            
+            <!-- Make Employee ID editable -->
+            <label for="employeeID">Employee ID:</label>
+            <input type="text" id="employeeID" name="employeeID" value="<?php echo $row['EmployeeID']; ?>" oninput="formatEmployeeID(this); checkDuplicateEmployeeID(this.value);" required>
+            <div id="employeeIDFeedback"></div>
             
             <!-- Employee Image Display and Upload -->
             <div style="text-align: center; margin-bottom: 20px;">
                 <?php if (!empty($row['Image']) && $row['Image'] != null): ?>
-                    <img src="data:image/jpeg;base64,<?php echo base64_encode($row['Image']); ?>" alt="Employee Image" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #4F6F52; margin-bottom: 10px;">
+                    <?php if (file_exists($row['Image'])): ?>
+                        <img src="<?php echo $row['Image']; ?>" alt="Employee Image" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #4F6F52; margin-bottom: 10px;">
+                    <?php else: ?>
+                        <div style="width: 120px; height: 120px; border-radius: 50%; background-color: #4F6F52; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                            <i class="fas fa-user" style="color: white; font-size: 3rem;"></i>
+                        </div>
+                    <?php endif; ?>
                 <?php else: ?>
                     <div style="width: 120px; height: 120px; border-radius: 50%; background-color: #4F6F52; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
                         <i class="fas fa-user" style="color: white; font-size: 3rem;"></i>
@@ -494,6 +542,82 @@ if(isset($_GET['id'])) {
         </form>
     </div>
     <script>
+        // Variable to track the timer for delayed checking
+        let employeeIDCheckTimer;
+        
+        // Function to check for duplicate Employee ID
+        function checkDuplicateEmployeeID(employeeID) {
+            // Clear any existing timer
+            clearTimeout(employeeIDCheckTimer);
+            
+            // Get the feedback element
+            const feedbackElement = document.getElementById('employeeIDFeedback');
+            
+            // If the employee ID is empty, hide the feedback and return
+            if (!employeeID) {
+                feedbackElement.style.display = 'none';
+                return;
+            }
+            
+            // Get the current ID
+            const currentID = document.getElementById('currentID').value;
+            
+            // If the employee ID is the same as the current ID, hide the feedback and return
+            if (employeeID === currentID) {
+                feedbackElement.style.display = 'none';
+                return;
+            }
+            
+            // Set a timer to delay the check until the user stops typing
+            employeeIDCheckTimer = setTimeout(() => {
+                // Create form data
+                const formData = new FormData();
+                formData.append('employeeID', employeeID);
+                formData.append('currentID', currentID);
+                
+                // Send AJAX request to check for duplicate
+                fetch('check_duplicate_employee_id_for_update.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.isDuplicate) {
+                        // Show error message
+                        feedbackElement.textContent = '⚠️ ' + data.message;
+                        feedbackElement.style.display = 'block';
+                        
+                        // Add shake animation
+                        const employeeIDInput = document.getElementById('employeeID');
+                        employeeIDInput.classList.add('shake-animation');
+                        setTimeout(() => {
+                            employeeIDInput.classList.remove('shake-animation');
+                        }, 500);
+                    } else {
+                        // Hide error message
+                        feedbackElement.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking duplicate Employee ID:', error);
+                });
+            }, 500); // Wait 500ms after the user stops typing
+        }
+        
+        // Function to format Employee ID
+        function formatEmployeeID(input) {
+            var value = input.value;
+            // Remove any characters except numbers and dash
+            value = value.replace(/[^\d-]/g, '');
+            
+            // Limit total length to 20 characters
+            if (value.length > 20) {
+                value = value.slice(0, 20);
+            }
+            
+            input.value = value;
+        }
+        
         // File upload functionality
         document.addEventListener('DOMContentLoaded', function() {
             // Add validation for name fields (only letters, dashes, and spaces)
@@ -583,6 +707,19 @@ if(isset($_GET['id'])) {
                     }
                 } else {
                     fileNameDisplay.textContent = '';
+                }
+            });
+            
+            // Add form submission validation
+            document.getElementById('updateForm').addEventListener('submit', function(event) {
+                // Check for duplicate Employee ID before submitting
+                const feedbackElement = document.getElementById('employeeIDFeedback');
+                
+                // If there's a visible error message about duplicate ID, prevent form submission
+                if (feedbackElement.style.display === 'block') {
+                    event.preventDefault();
+                    alert('Please use a unique Employee ID. The current ID already exists in the database.');
+                    return;
                 }
             });
             

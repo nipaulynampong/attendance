@@ -75,25 +75,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Check if the uploaded file has an allowed extension
         if (in_array($fileExtension, $allowedExtensions)) {
-            // Read file data
-            $imageData = file_get_contents($fileTmpPath);
-            // Escape image data for database insertion
-            $escapedImageData = $conn->real_escape_string($imageData);
-
-            // Clean up temporary file
-            unlink($qrCodeURL);
+            // Create employee images directory if it doesn't exist
+            $uploadDir = 'employee_images/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            
+            // Generate a unique filename to prevent overwriting
+            $newFileName = $employeeID . '_' . time() . '.' . $fileExtension;
+            $uploadPath = $uploadDir . $newFileName;
+            
+            // Move the uploaded file to our directory
+            if (move_uploaded_file($fileTmpPath, $uploadPath)) {
+                // Store the file path in the database instead of binary data
+                $imageFilePath = $uploadPath;
+            } else {
+                echo "Error uploading file.";
+                exit;
+            }
+            
+            // No need to escape the file path as it's a simple string
+            $escapedImageData = $conn->real_escape_string($imageFilePath);
             
             $sql = "INSERT INTO employee (`EmployeeID`, `Last Name`, `First Name`, `Middle Name`, `Suffix`, `Age`, `Birthday`, `Address`, `Gender`, `Contact Number`, `Email Address`, `Department`, `Monday_Rest`, `Tuesday_Rest`, `Wednesday_Rest`, `Thursday_Rest`, `Friday_Rest`, `Saturday_Rest`, `Sunday_Rest`, `Image`, `QRCode`)
             VALUES ('$employeeID', '$lastName', '$firstName', '$middleName', '$suffix', '$age', '$birthday', '$address', '$gender', '$contactNumber', '$emailAddress', '$department', '$mondayRest', '$tuesdayRest', '$wednesdayRest', '$thursdayRest', '$fridayRest', '$saturdayRest', '$sundayRest', '$escapedImageData', '$escapedQRCodeImage')";
 
             
             if ($conn->query($sql) === TRUE) {
-               
-                $_SESSION['employee_added'] = true;
-                
-              
-                header("Location: " . $_SERVER['REQUEST_URI']);
-                exit();
+                // For AJAX requests, just return a simple success message
+                echo '<div id="success-message">
+                    <i class="fas fa-check-circle" style="margin-right: 10px;"></i>
+                    <strong>Success!</strong> The employee was successfully added to the database.
+                </div>';
             } else {
                 echo "Error: " . $sql . "<br>" . $conn->error;
             }
@@ -106,9 +119,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         VALUES ('$employeeID', '$lastName', '$firstName', '$middleName', '$suffix', '$age', '$birthday', '$address', '$gender', '$contactNumber', '$emailAddress', '$department', '$mondayRest', '$tuesdayRest', '$wednesdayRest', '$thursdayRest', '$fridayRest', '$saturdayRest', '$sundayRest', '$escapedQRCodeImage')";
         
         if ($conn->query($sql) === TRUE) {
-            $_SESSION['employee_added'] = true;
-            header("Location: " . $_SERVER['REQUEST_URI']);
-            exit();
+            // For AJAX requests, just return a simple success message
+            echo '<div id="success-message">
+                <i class="fas fa-check-circle" style="margin-right: 10px;"></i>
+                <strong>Success!</strong> The employee was successfully added to the database.
+            </div>';
         } else {
             echo "Error: " . $sql . "<br>" . $conn->error;
         }
@@ -162,6 +177,17 @@ $conn->close();
             padding: 10px;
             box-sizing: border-box;
             width: 100%;
+        }
+        
+        /* Shake animation for duplicate Employee ID */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake-animation {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
             max-width: 100%;
             overflow-x: hidden;
             font-size: 14px;
@@ -290,37 +316,15 @@ $conn->close();
     <h2>Add New Employee</h2>
         
         <?php
-        // Display success message if employee was added successfully
-        if (isset($_SESSION['employee_added']) && $_SESSION['employee_added'] === true) {
-        echo '<div id="success-message">
-                <i class="fas fa-check-circle" style="margin-right: 10px;"></i>
-                <strong>Success!</strong> The employee was successfully added to the database.
-            </div>';
-            
-            // Clear the session variable
+        // We're now displaying success messages directly when the form is submitted
+        // So we'll just clear any existing session variable
+        if (isset($_SESSION['employee_added'])) {
             unset($_SESSION['employee_added']);
-            
-            // Add JavaScript to auto-hide the message after 5 seconds
-            echo '<script>
-                setTimeout(function() {
-                    var successMessage = document.getElementById("success-message");
-                    if (successMessage) {
-                        successMessage.style.opacity = "1";
-                        var fadeEffect = setInterval(function() {
-                            if (successMessage.style.opacity > 0) {
-                                successMessage.style.opacity -= 0.1;
-                            } else {
-                                clearInterval(fadeEffect);
-                                successMessage.style.display = "none";
-                            }
-                        }, 100);
-                    }
-                }, 5000);
-            </script>';
         }
         ?>
         
         <!-- Employee Form -->
+        <div id="form-response-message" style="display: none;"></div>
         <form id="employeeForm" enctype="multipart/form-data" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
             <div class="form-row">
                 <div class="input-group">
@@ -393,7 +397,8 @@ $conn->close();
                 </div>
                 <div class="input-group">
                     <label for="employeeID">Employee ID:</label>
-                    <input type="text" id="employeeID" name="employeeID" oninput="formatEmployeeID(this)" placeholder="Enter numbers only (max 20 chars)" required>
+                    <input type="text" id="employeeID" name="employeeID" oninput="formatEmployeeID(this); checkDuplicateEmployeeID(this.value);" placeholder="Enter numbers only (max 20 chars)" required>
+                    <div id="employeeIDFeedback" style="display: none; color: #dc3545; font-size: 14px; margin-top: 5px; font-weight: 500;"></div>
                     <button type="button" onclick="generateQRCode()">Generate QR Code</button>
                     <div class="qr-note">
                         <small><i class="fas fa-info-circle"></i> Note: QR Code generation may take a moment. The QR Code image will be saved in the 'qrcodes' folder.</small>
@@ -618,6 +623,62 @@ $conn->close();
             
             input.value = value;
         }
+        
+        // Variable to track the timer for delayed checking
+        let employeeIDCheckTimer;
+        
+        // Function to check for duplicate Employee ID
+        function checkDuplicateEmployeeID(employeeID) {
+            // Clear any existing timer
+            clearTimeout(employeeIDCheckTimer);
+            
+            // Get the feedback element
+            const feedbackElement = document.getElementById('employeeIDFeedback');
+            
+            // If the employee ID is empty, hide the feedback and return
+            if (!employeeID) {
+                feedbackElement.style.display = 'none';
+                return;
+            }
+            
+            // Set a timer to delay the check until the user stops typing
+            employeeIDCheckTimer = setTimeout(() => {
+                // Create form data
+                const formData = new FormData();
+                formData.append('employeeID', employeeID);
+                
+                // Send AJAX request to check for duplicate
+                fetch('check_duplicate_employee_id.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.isDuplicate) {
+                        // Show error message
+                        feedbackElement.textContent = '⚠️ ' + data.message;
+                        feedbackElement.style.display = 'block';
+                        feedbackElement.style.backgroundColor = '#ffe6e6';
+                        feedbackElement.style.padding = '8px 12px';
+                        feedbackElement.style.borderRadius = '4px';
+                        feedbackElement.style.borderLeft = '4px solid #dc3545';
+                        
+                        // Add shake animation
+                        const employeeIDInput = document.getElementById('employeeID');
+                        employeeIDInput.classList.add('shake-animation');
+                        setTimeout(() => {
+                            employeeIDInput.classList.remove('shake-animation');
+                        }, 500);
+                    } else {
+                        // Hide error message
+                        feedbackElement.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking duplicate Employee ID:', error);
+                });
+            }, 500); // Wait 500ms after the user stops typing
+        }
 
         // Add event listeners when the page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -651,11 +712,61 @@ $conn->close();
                 }
             });
             
-            // Add event listener to the form for validation on submit
+            // Add event listener to the form for validation and AJAX submission
             document.getElementById('employeeForm').addEventListener('submit', function(event) {
-                if (!validateForm()) {
-                    event.preventDefault();
+                // Always prevent the default form submission
+                event.preventDefault();
+                
+                // Check for duplicate Employee ID before submitting
+                const employeeID = document.getElementById('employeeID').value;
+                const feedbackElement = document.getElementById('employeeIDFeedback');
+                
+                // If there's a visible error message about duplicate ID, prevent form submission
+                if (feedbackElement && feedbackElement.style.display === 'block') {
+                    alert('Please use a unique Employee ID. The current ID already exists in the database.');
+                    return;
                 }
+                
+                // Validate the form
+                if (!validateForm()) {
+                    return;
+                }
+                
+                // If validation passes, submit the form using AJAX
+                const formData = new FormData(this);
+                
+                // Show loading indicator
+                const responseMessage = document.getElementById('form-response-message');
+                responseMessage.innerHTML = '<div style="text-align: center; padding: 15px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #4F6F52;"></i> Adding employee...</div>';
+                responseMessage.style.display = 'block';
+                
+                fetch('<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(html => {
+                    // Check if the response contains a success message
+                    if (html.includes('Success!')) {
+                        // Show success message
+                        responseMessage.innerHTML = '<div id="success-message"><i class="fas fa-check-circle" style="margin-right: 10px;"></i><strong>Success!</strong> The employee was successfully added to the database.</div>';
+                        
+                        // Reset the form
+                        document.getElementById('employeeForm').reset();
+                        
+                        // Hide success message after 5 seconds
+                        setTimeout(function() {
+                            responseMessage.style.display = 'none';
+                        }, 5000);
+                    } else {
+                        // If there's an error, display the response
+                        responseMessage.innerHTML = html;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    responseMessage.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px;"><i class="fas fa-exclamation-circle"></i> An error occurred while adding the employee. Please try again.</div>';
+                });
             });
             
             // Check if page is in an iframe and make minimal adjustments
